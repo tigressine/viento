@@ -1,202 +1,232 @@
 #! /usr/bin/env python3
 import os
 
-# Functions #
+# FUNCTIONS #
+# Generical functions #
 def header():
     os.system('cls' if os.name == 'nt' else 'clear')
     print("AutoClone Setup Utility (" + str(change_count) + " changes)\n")
 
-def input_specific(prompt, valid_input):
+def input_restricted(prompt, valid_list):
     i = input(prompt)
-    if i in valid_input:
+    if i in valid_list:
         return i
     else:
         return False
 
-def confirm():
-    print("\nIs this correct? (Y/n)")
+def print_restricted(item, max_len):
+    for x in range(max_len):
+        try:
+            print(item[x], end='')
+        except IndexError:
+            print(" ", end='')
+
+def confirm_input():
+    print("Is this correct? (Y/n)")
+    valid_list = ['y', 'Y', 'yes', 'Yes', 'n', 'N', 'no', 'No']
+    
     while(True):
-        valid = ['y','Y','yes','Yes','n','N','no','No']
-        yn = input_specific("> ", valid)
-        if yn in valid[:4]:
+        i = input_restricted("> ", valid_list)
+        if i == False:
+            print("Invalid input. Please enter 'y' or 'n'.")
+        elif i in valid_list[:4]:
             return True
-        elif yn in valid[4:]:
+        elif i in valid_list[4:]:
             return False
-        elif yn == False:
-            print("Invalid response")
 
 def load_links():
-    global new_links
-
+    links = []
     try:
-        with open("links.data","r") as f:
-            pass
+        with open(f_links, 'r') as f:
+            lines = f.read().splitlines()
+            for each in lines:
+                links.append(each.split('\t'))
     except FileNotFoundError:
-        with open("links.data","w") as f:
-            pass
+        pass
     finally:
-        with open("links.data","r") as f:
-            new_links = []
-            lines = f.readlines()
-            for line in lines:
-                new_links.append(line.split("\t"))
+        return links
 
-def list_links():
-    print("Number\tSource\tDestination\tFlag\tInterval\n")
-    for x in new_links:
-        for y in x:
-            print(y + "\t", end="")
-        print("")
-    print("\n")
-
-def select_link(action):
+def select_link():
+    
     while(True):
-        print("Enter the number of the link you'd like to " + action + ".")
+        print("Enter the number of the value you'd like to modify.")
         i = input("> ")
-
-        if i == 'q':
-            return False
-
-        elif i.isnumeric() and int(i) <= len(new_links) and int(i) != 0:
-            for x in new_links:
-                if x[0] == i:
-                    for each in x:
-                        print(each + "\t", end="")
-                        if confirm():
-                            return x
-                        else:
-                            break
+        if i.isnumeric() and int(i) <= len(links) and int(i) > 0:
+            for link in links:
+                if link[0] == i:
+                    for x in range(1,5):
+                        print_restricted(link[x], spacing[x])
+                        print(" : ", end='')
+                    print("\n")
+                    if confirm_input():
+                        return link
+                    else:
+                        return False
                 else:
                     pass
         else:
-            print("Please enter a number between 1 and " + str(len(new_links)) + ".")
+            print("Invalid input. Please enter a number between 1 and " + str(len(links)) + ".")
 
+# Command functions #
+def command_help():
+    header()
+    print("COMMAND : NAME   : DESCRIPTION\n" +
+          "      h : help   : Displays this help menu.\n" +
+          "      n : new    : Creates a new link.\n" +
+          "      r : remove : Removes a specific link.\n" +
+          "      e : edit   : Edits a specific link.\n" +
+          "      l : list   : Lists all existing links.\n" +
+          "      w : write  : Writes all changes to file.\n" +
+          "      c : clear  : Clears all changes.\n" +
+          "      q : quit   : Quits this setup utility.\n")
 
-
-
-def main():
+def command_new():
     global change_count
 
-    change_count = 0
-    valid = ['h', 'n', 'r', 'e', 'l', 'w', 'c', 'q']
     header()
-    while(True):
-        print("Enter a command. ('h' for help)")
-        i = input_specific("> ", valid)
+    src = str(input("Source: "))
+    dest = str(input("Destination: "))
+    valid_list = ['-s', '-c', 's', 'c']
     
-        if i == 'h': #help
-            header()
-            print("COMMAND : NAME   : DESCRIPTION\n" +
-                  "      h : help   : Brings up the help menu\n" +
-                  "      n : new    : Creates a new link\n" +
-                  "      r : remove : Removes a selected link\n" +
-                  "      e : edit   : Edits a selected link\n" +
-                  "      l : list   : Lists all existing links\n" +
-                  "      w : write  : Writes changes to file\n" +
-                  "      c : clear  : Clears changes to file\n" +
-                  "      q : quit   : Quits the setup utility\n")
+    while(True):
+        i = input("Interval: ")
+        if i.isnumeric() and int(i) > 0 and int(i) <= 86400:
+            intv = i
+            break
+        else:
+            print("Invalid input. Please enter a number between 1 and 86400.")
 
-        elif i == 'n': #new
-            header()
-            src = str(input("Source: "))
-            dest = str(input("Destination: "))
-            
+    while(True):
+        i = input_restricted("Flags: ", valid_list)
+        if i == False:
+            print("Invalid input. Please enter a valid flag.")
+        elif i in valid_list:
+            flag = i
+            break
+    
+    print(src + "\t" + dest + "\t" + intv + "\t" + flag)
+
+    if confirm_input():
+        change_count += 1
+        num = str(len(links) + 1)
+        link = [num, src, dest, intv, flag]
+        links.append(link)
+
+def command_remove():
+    global change_count
+
+    header()
+    command_list()
+
+    link = select_link()
+    if link:
+        change_count += 1
+        links.remove(link)
+        for each in links:
+            each[0] = str(links.index(each) + 1)
+
+def command_edit():
+    global change_count
+
+    header()
+    command_list()
+
+    valid_list = ['1', '2', '3', '4']
+    link = select_link()
+    print("(1) Source:      " + link[1] + "\n" +
+          "(2) Destination: " + link[2] + "\n" +
+          "(3) Interval:    " + link[3] + "\n" +
+          "(4) Flags:       " + link[4] + "\n")
+    
+    while(True):
+        print("Enter the number of the value you'd like to modify.")
+        i = input_restricted("> ", valid_list)
+        if i == False:
+            print("Invalid input. Please enter a number between 1 and 4.")
+        elif i in valid_list:
+
             while(True):
-                valid_flags = ['-s', '-c']
-                i = input_specific("Flags: ", valid_flags)
-                if i != False:
-                    flag = i
+                print("Old value: " + str(links[int(link[0]) - 1][int(i)]))
+                new = input("New value: ")
+                if confirm_input():
+                    change_count += 1
+                    links[int(link[0]) - 1][int(i)] = new
                     break
+            break
+
+def command_list():
+    print("NUMBER : SOURCE : DESTINATION : INTERVAL : FLAGS")
+    for each in links:    
+        for x in range(5):
+            print_restricted(each[x], spacing[x])
+            print(" : ", end='')
+        print("\n")
+
+def command_write():
+    global change_count
+
+    with open(f_links, 'w') as f:
+        for x in links:
+            for y in x:
+                if x.index(y) < len(x) - 1:
+                    f.write(y + "\t")
                 else:
-                    print("Enter a valid flag")
+                    f.write(y)
+            f.write("\n")
+    print(str(change_count) + " change", end='')
+    if change_count != 1:
+        print("s", end='')
+    print(" saved to file.")
+    change_count = 0
 
-            while(True):
-                intv = input("Interval: ")   
-                if intv.isnumeric():
-                    intv = int(intv)
-                    if intv > 0 and intv <= 86400:
-                        intv = str(intv)
-                        break
-                else:
-                    print("Enter a number between 1 and 86400")
 
-            print("\n" + src + "\t" + dest + "\t" + flag + "\t" + intv + "\n")
-            
-            if confirm():
-                change_count += 1
-                link_num = str(len(new_links) + 1)
-                new_link = [link_num, src, dest, flag, intv]
-                new_links.append(new_link)
+# BEGIN PROGRAM #
+f_links = "links.data"
+links = load_links()
+change_count = 0
+valid_commands = ['h', 'n', 'r', 'e', 'l', 'w', 'c', 'q']
+spacing = [3, 30, 30, 5, 4]
+
+header()
+while(True):
+    print("Enter a command. ('h' for help)")
+    command = input_restricted("> ", valid_commands)
+
+    if command == False:
+        print("Invalid input. Please enter a valid command.")
+    
+    elif command == 'h':
+        command_help()
+
+    elif command == 'n':
+        command_new()
+        header()
+
+    elif command == 'r':
+        command_remove()
+        header()
+
+    elif command == 'e':
+        command_edit()
+        header()
+
+    elif command == 'l':
+        header()
+        command_list()
+
+    elif command == 'w':
+        command_write()
+
+    elif command == 'c':
+        change_count = 0
+        links = load_links()
+        header()
+
+    elif command == 'q':
+        header()
+        print("You would like to quit.")
+        if confirm_input():
+            os.system('cls' if os.name == 'nt' else 'clear')
+            quit()
+        else:
             header()
-
-        elif i == 'r': #remove
-            header()
-            list_links()
-
-            bad_link = select_link("remove")
-            if bad_link:
-                change_count += 1
-                new_links.remove(bad_link)
-                for each in new_links:
-                    if each[0] != str(new_links.index(each) + 1):
-                        each[0] = str(new_links.index(each) + 1)
-            header()
-
-        elif i == 'e': #edit
-            header()
-            list_links()
-            edit_link = select_link("edit")
-            print("(1) Source:      " + edit_link[1] + "\n" +
-                  "(2) Destination: " + edit_link[2] + "\n" +
-                  "(3) Flags:       " + edit_link[3] + "\n" +
-                  "(4) Interval:    " + edit_link[4])
-            valid_nums = ['1', '2', '3', '4']
-
-            def edit_element(link, element): #####
-                while(True):
-                    print("Old value: " + str(new_links[int(link)-1][int(element)]))
-                    i = input("New value: ")
-                    if confirm():
-                        change_count += 1
-                        new_links[link-1][element] = i
-                        break
-
-            while(True):
-                print("Select the number of the value you'd like to modify.")
-                i = input_specific("> ", valid_nums)
-                if i == False:
-                    print("Select a number between 1 and 4.")
-                elif i in valid_nums:
-
-                    while(True):
-                        print("Old value: " + str(new_links[int(edit_link[0])-1][int(i)]))
-                        x = input("New value: ")
-                        if confirm():
-                            change_count += 1
-                            new_links[int(edit_link[0])-1][int(i)] = x
-                            print(new_links[int(edit_link[0])-1][int(i)])
-                            break
-                    header()
-                    break
-
-        elif i == 'l': #list
-            header()
-            list_links()
-            
-        elif i == 'w': #write
-            print(change_count)
-
-        elif i == 'q': #quit
-            header()
-            print("You would like to quit")
-            if confirm():
-                os.system('cls' if os.name == 'nt' else 'clear')
-                quit()
-            else:
-                header()
-
-        else: #invalid
-            print("invalid")
-
-load_links()
-main()

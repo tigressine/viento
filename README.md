@@ -4,5 +4,5 @@ Python utility to automate copies, syncs, and moves performed by rclone. This to
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
 Current Release: 7/13/2017  
-Version: 0.01 ALPHA  
+Version: 0.1.0-beta 
 License: GNU GPLv3  

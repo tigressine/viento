@@ -8,8 +8,8 @@ also provides data about the program.
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
 Current Release: 7/13/2017
-Version 0.01
-Lincense: GNU GPLv3
+Version: 0.01
+License: GNU GPLv3
 """
 import os
 import sys

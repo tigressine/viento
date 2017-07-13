@@ -1,0 +1,8 @@
+[Unit]
+Description=test
+
+[Service]
+ExecStart=/home/tgsachse/Programming/Python/AutoClone/acdaemon.py
+
+[Install]
+WantedBy=default.target

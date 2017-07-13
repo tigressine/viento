@@ -7,7 +7,7 @@ script outputs to log files defined by the variables f_log1 and f_log2.
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
 Current Release: 7/13/2017
-Version: 0.01
+Version: 0.1.0-beta
 License: GNU GPLv3
 """
 import os
@@ -203,7 +203,6 @@ dirs = [os.path.expanduser('~/.autoclone'),
         os.path.expanduser('~/.autoclone/logs'),
         os.path.expanduser('~/.autoclone/jobs')]
 f_links = dirs[0] + '/links.json'
-f_pid = dirs[0] + '/pid.dat'
 f_log1 = dirs[1] + '/daemon.log'
 f_log2 = dirs[1] + '/daemon_old.log'
 f_job_template = dirs[2] + '/job{}.dat'
@@ -213,5 +212,4 @@ links = load_links()
 
 signal.signal(signal.SIGUSR1, signal_SIGUSR1_handler)
 
-if __name__ == '__main__':
-    main()
+main()

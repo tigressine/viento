@@ -6,7 +6,7 @@ used by AutoClone.
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
 Current Release: 7/13/2017
-Version: 0.01
+Version: 0.1.0-beta
 License: GNU GPLv3
 """
 import os
@@ -235,7 +235,7 @@ The f_links variable can be changed to save the .json file anywhere, under any
 name. If this is done the f_links variable must be changed in the other two scripts,
 however. Those two scripts are the main autoclone script and the acdaemon.py script.
 """
-f_links = "links.json"
+f_links = os.path.expanduser('~/.autoclone/links.json')
 links = load_links()
 change_count = Counter()
 valid_commands = ['h', 'n', 'r', 'e', 'l', 'w', 'c', 'q']

@@ -8,41 +8,63 @@ also provides data about the program.
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
 Current Release: 7/13/2017
-Version: 0.01
+Version 0.1.0-beta
 License: GNU GPLv3
 """
 import os
 import sys
-#import signal
 
-command = sys.argv[1]
+try:
+    command = sys.argv[1]
+except IndexError:
+    print("No command entered. Enter 'autoclone help' for a list of commands.")
+    quit()
+
 valid = ['start', 'stop',
          'enable', 'disable',
          'setup', 'status',
-         'version']
+         'version', 'help']
 
 if command in valid:
     if command == 'start':
-        os.system('systemctl start autoclone.service')
-    
+        os.system('systemctl --user start autoclone.service')
+        print("AutoClone service started.")
+
     elif command == 'stop':
-        os.system('systemctl stop autoclone.service')
+        os.system('systemctl --user stop autoclone.service')
+        print("AutoClone service stopped.")
 
     elif command == 'enable':
-        os.system('systemctl enable autoclone.service')
+        os.system('systemctl --user enable autoclone.service')
+        print("AutoClone service enabled at login on next boot")
+        print("Run 'autoclone start' to start the service right now.")
 
     elif command == 'disable':
-        os.system('systemctl disable autoclone.service')
-
+        os.system('systemctl --user disable autoclone.service')
+        print("AutoClone service disabled at login on next boot")
+        print("Run 'autoclone stop' to stop the service right now.")
+        
     elif command == 'setup':
-        pass
+        os.system('acsetup.py')
     
     elif command == 'status':
         pass
-    
-    
-    
-    
-    
+
+    elif command == 'version':
+        os.system('clear')
+        print("AutoClone Cloud Syncing Utility\n\n" +
+              "Version: v0.1.0-beta\n" +
+              "Author: tgsachse (Tiger Sachse)\n" +
+              "Intitial Release: 7/13/2017\n" +
+              "Current Release: 7/13/2017\n" +
+              "License: GNU GPLv3")
+
+    elif command == 'help':
+        os.system('clear')
+        print("Welcome to AutoClone. Here's a list of commands:\n" +
+              "start    stop    enable\n" +
+              "disable  setup   status\n" +
+              "version  help")
+
 else:
     print("Invalid command.")

@@ -6,5 +6,5 @@ Beta release. Everything works, but manual installation is still required. Move 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
 Current Release: 7/13/2017  
-Version: 0.1.0-beta 
+Version: 0.1.0-beta  
 License: GNU GPLv3  

@@ -93,7 +93,7 @@ if command in valid:
         print("Run 'viento stop' to stop the service right now.")
         
     elif command == 'setup':
-        os.system('/usr/lib/python3.6/site-packages/wind_setup.py')
+        os.system('/usr/lib/python3.6/site-packages/viento_s.py')
     
     elif command == 'status':
         pass

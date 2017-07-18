@@ -1,10 +1,24 @@
-# AutoClone
-Python utility to automate copies, syncs, and moves performed by rclone. This tool will allow you to sync local files to remote cloud servers (like Google Drive, OneDrive and Amazon) and vice versa. The file transfers occur at custom intervals and the finished product will include some psuedo-machine learning, where the scripts are able to predict heavy usage periods for file directories and increase transfer intervals during these times.  
+# Viento Cloud Management Utility
 
-Beta release. Everything works, but manual installation is still required. Move 'autoclone', 'acdaemon.py', and 'acsetup.py' to '/usr/bin'. Move autoclone.service to '~/.config/systemd/user' (create it if it doesn't exist). Finally run the command 'autoclone setup' and you should see the setup utility. Requires python 3.6, rclone, and termcolor installed. You can get python 3.6 through Pacman (I'm building this on Arch Linux at the moment, so that's all I currently support. May expand later). rclone is located in the AUR. Install termcolor through PIP ('pip install termcolor'). If you don't have pip you'll have to install that too, and I believe it is available through Pacman. Setup rclone before setting up AutoClone (follow his documentation).
+Viento (Spanish for 'wind') allows you to move through the clouds with ease! This utility is designed on top of [rclone](https://rclone.org/), and is intended to allow users to automatically sync/copy/move files and directories to and from local and remote destinations. Here are a few examples of what Viento can do.
+
+-Copy your music files from your Amazon Drive to Microsoft OneDrive every 2 hours.  
+-Sync your Google Photos with Dropbox every 0 minutes.  
+-Backup your Microsoft OneDrive and Dropbox onto a local drive every 24 hours.  
+-Copy your dotfiles into a dotfile folder on your Google Drive.  
+
+Viento is under active development and, with each update, aims to support more and more of rclone's extensive features, as well as add some features of its own. Viento is a daemon, so after setup it will continually run in the background to keep your stuff synced. When viento is not syncing it is asleep, which means it has a very small footprint on your machine. I'd like to give a big shoutout to [Nick Craig-Wood](https://github.com/ncw) and all his [contributing authors](https://rclone.org/authors/) for building an amazing piece of software in rclone!
+
+[Installation](INSTALL.md)
+
+TODO:  
+[] Finish command interface.  
+[] Warn shutdown process if transfer is happening.  
+[] Implement machine learning to change intervals based on use patterns.  
+[] Add rclone setup into Viento setup.  
 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
-Current Release: 7/13/2017  
-Version: 0.1.0-beta  
-License: GNU GPLv3  
+Current Release: 7/18/2017  
+Version: 0.3.0-beta  
+License: GNU GPLv3 

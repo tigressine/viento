@@ -179,7 +179,7 @@ def main():
     of time has passed before that link's command should be executed. If it has passed,
     the while loop executes that command in a new thread.
     """
-    log('INSTANCE: new instance of Wind started')
+    log('INSTANCE: new instance of Viento started')
 
     while(True):
         hour = int(time.strftime('%H', time.localtime()))
@@ -194,10 +194,10 @@ def main():
 
 ### PROGRAM START ###
 """
-These variables define where all the files that Wind needs are located, besides
+These variables define where all the files that Viento needs are located, besides
 the actual .py scripts. These variables should be changeable as you see fit. It will
-be necessary to edit them in all 3 .py scripts however (i.e. this script, the wind_setup.py
-script, and the main wind script).
+be necessary to edit them in all 3 .py scripts however (i.e. this script, the viento_s.py
+script, and the main viento script).
 """
 dirs = [os.path.expanduser('~/.viento'),
         os.path.expanduser('~/.viento/logs'),

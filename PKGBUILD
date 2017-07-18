@@ -9,12 +9,12 @@ url="https://github.com/tgsachse/viento"
 license=('GPLv3')
 depends=('python' 'rclone' 'python-termcolor')
 source=('git+https://github.com/tgsachse/viento.git')
+md5sums=('SKIP')
 
 pkgver(){
     cd viento
-    git describe --long | sed 's/^v-//;s/\([^-]*-g\)/r\1/;s/-/./g'
+    git describe --long --tags | sed 's/^v-//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
-
 
 package() {
     cd viento

@@ -71,23 +71,23 @@ valid = ['start', 'stop',
 
 if command in valid:
     if command == 'start':
-        check_setup()
+        check_dirs()
         os.system('systemctl --user start viento.service')
         print("Viento service started.")
 
     elif command == 'stop':
-        check_setup()
+        check_dirs()
         os.system('systemctl --user stop viento.service')
         print("Viento service stopped.")
 
     elif command == 'enable':
-        check_setup()
+        check_dirs()
         os.system('systemctl --user enable viento.service')
         print("Viento service enabled at login on next boot")
         print("Run 'viento start' to start the service right now.")
 
     elif command == 'disable':
-        check_setup()
+        check_dirs()
         os.system('systemctl --user disable viento.service')
         print("Viento service disabled at login on next boot")
         print("Run 'viento stop' to stop the service right now.")

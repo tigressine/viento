@@ -1,36 +1,32 @@
 #! /usr/bin/env python3
 """
-This is the core of the Viento program. It is the main interface that the
+This is the core of the viento program. It is the main interface that the
 user will interact with. This script handles commands and is able to manipulate
-the viento_d.py daemon that drives the Viento transfer process. This script
+the viento_d.py daemon that drives the viento transfer process. This script
 also provides data about the program.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/18/2017
-Version 0.3.0-beta
+Current Release: 7/21/2017
+Version 0.4.0-beta
 License: GNU GPLv3
 """
 import os
 import sys
-#import viento_s ####### probably wont work on installed vers pls fix
+import viento_utils
 
-def check_dirs():
+def check_setup():
     """
-    
+    Checks the setup of the user, with regards to the existence of critical files and directories.
+    If no links file (defined in viento_utils) exists then the program exits. If no service file
+    (also defined in viento_utils) exists then the user is prompted to generate one.
     """
-    try:
-        with open(f_links, 'r') as f:
-            pass
-    except FileNotFoundError:
+    if not os.path.exists(viento_utils.f_links):
         print("No links file exists. Please run 'viento setup' to make one.")
         quit()
 
-    try:
-        with open(f_service, 'r') as f:
-            pass
-    except FileNotFoundError:
-        print("No service file exists. Would you like to create one at {}".format(f_service))
+    if not os.path.exists(viento_utils.f_service):
+        print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
         i = input("(Y/n) > ")
         if i in ['y', 'Y', 'yes', 'Yes']:
             f_service_example = ['[Unit]\n',
@@ -39,85 +35,77 @@ def check_dirs():
                                  'ExecStart=/usr/lib/python3.6/site-packages/viento_d.py\n\n',
                                  '[Install]\n',
                                  'WantedBy=default.target']
-            for each in dirs:
-                if not os.path.exists(each):
-                    os.mkdir(each)
-            with open(f_service, 'w') as f:
+            with open(viento_utils.f_service, 'w') as f:
                 for each in f_service_example:
                     f.write(each)
-
         elif i in ['n', 'N', 'no', 'No']:
             quit()
 
-dirs = [os.path.expanduser('~/.config'),
-        os.path.expanduser('~/.config/systemd'),
-        os.path.expanduser('~/.config/systemd/user'),
-        os.path.expanduser('~/.viento'),
-        os.path.expanduser('~/.viento/logs'),
-        os.path.expanduser('~/.viento/jobs')]
+def main():
+    """
+    Allows the user to control the viento daemon and setup utility. This list of commands
+    will likely be expanded.
+    """
+    try:
+        command = sys.argv[1]
+    except IndexError:
+        print("No command entered. Enter 'viento help' for a list of commands.")
+        quit()
 
-f_service = dirs[2] + '/viento.service'
-f_links = dirs[3] + '/links.json'
+    valid = ['start', 'stop',
+             'enable', 'disable',
+             'setup', 'status',
+             'version', 'force',
+             'help']
 
-try:
-    command = sys.argv[1]
-except IndexError:
-    print("No command entered. Enter 'viento help' for a list of commands.")
-    quit()
+    if command in valid:
+        viento_utils.check_directories()
+        if command == 'start':
+            os.system('systemctl --user start viento.service')
+            print("Viento service started.")
 
-valid = ['start', 'stop',
-         'enable', 'disable',
-         'setup', 'status',
-         'version', 'force',
-         'help']
+        elif command == 'stop':
+            os.system('systemctl --user stop viento.service')
+            print("Viento service stopped.")
 
-if command in valid:
-    if command == 'start':
-        check_dirs()
-        os.system('systemctl --user start viento.service')
-        print("Viento service started.")
+        elif command == 'enable':
+            os.system('systemctl --user enable viento.service')
+            print("Viento service enabled at login on next boot")
+            print("Run 'viento start' to start the service right now.")
 
-    elif command == 'stop':
-        check_dirs()
-        os.system('systemctl --user stop viento.service')
-        print("Viento service stopped.")
-
-    elif command == 'enable':
-        check_dirs()
-        os.system('systemctl --user enable viento.service')
-        print("Viento service enabled at login on next boot")
-        print("Run 'viento start' to start the service right now.")
-
-    elif command == 'disable':
-        check_dirs()
-        os.system('systemctl --user disable viento.service')
-        print("Viento service disabled at login on next boot")
-        print("Run 'viento stop' to stop the service right now.")
+        elif command == 'disable':
+            os.system('systemctl --user disable viento.service')
+            print("Viento service disabled at login on next boot")
+            print("Run 'viento stop' to stop the service right now.")
+            
+        elif command == 'setup':
+            os.system('/usr/lib/python3.6/site-packages/viento_s.py')
         
-    elif command == 'setup':
-        os.system('/usr/lib/python3.6/site-packages/viento_s.py')
-    
-    elif command == 'status':
-        os.system('systemctl --user status viento.service')
+        elif command == 'status':
+            os.system('systemctl --user status viento.service')
 
-    elif command == 'version':
-        os.system('clear')
-        print("Viento Cloud Management Utility\n\n" +
-              "Version: v0.3.0-beta\n" +
-              "Author: tgsachse (Tiger Sachse)\n" +
-              "Intitial Release: 7/13/2017\n" +
-              "Current Release: 7/18/2017\n" +
-              "License: GNU GPLv3")
+        elif command == 'version':
+            os.system('clear')
+            print("Viento Cloud Management Utility\n\n" +
+                  "Version: v0.4.0-beta\n" +
+                  "Author: tgsachse (Tiger Sachse)\n" +
+                  "Intitial Release: 7/13/2017\n" +
+                  "Current Release: 7/21/2017\n" +
+                  "License: GNU GPLv3")
 
-    #elif command == 'force':
-        #viento_s.command_list()
+        #elif command == 'force':
+            #viento_s.command_list()
 
-    elif command == 'help':
-        os.system('clear')
-        print("Welcome to Viento. Here's a list of commands:\n" +
-              "start    stop    enable\n" +
-              "disable  setup   status\n" +
-              "version  help")
+        elif command == 'help':
+            os.system('clear')
+            print("Welcome to Viento. Here's a list of commands:\n" +
+                  "start    stop    enable\n" +
+                  "disable  setup   status\n" +
+                  "version  help")
 
-else:
-    print("Invalid command.")
+    else:
+        print("Invalid command.")
+
+
+if __name__ == '__main__':
+    main()

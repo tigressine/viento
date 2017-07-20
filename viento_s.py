@@ -1,17 +1,18 @@
 #! /usr/bin/env python3
 """
 This script provides a CLI to edit the .json file that stores all of the links
-used by Viento.
+used by viento.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/18/2017
-Version: 0.3.0-beta
+Current Release: 7/21/2017
+Version: 0.4.0-beta
 License: GNU GPLv3
 """
 import os
 import json
 import shutil
+import viento_utils
 from termcolor import cprint
 
 ### CLASSES ###
@@ -32,11 +33,6 @@ class Counter:
 
 ### FUNCTIONS ###
 # Generical functions #
-def check_dirs():
-    for each in dirs:
-        if not os.path.exists(each):
-            os.mkdir(each)
-
 def header():
     """
     Clears the current window, then outputs the header defined by the variable
@@ -89,24 +85,6 @@ def confirm_input():
             return True
         elif i in valid[4:]:
             return False
-
-def load_links():
-    """
-    Loads the links saved in the f_links .json file. If the file does not
-    exist, the file is created and populated with an empty list. Finally
-    the results of the function are returned.
-    """
-    try:
-        with open(f_links, 'r') as f:
-            links = json.load(f)
-    except FileNotFoundError:
-        with open(f_links, 'w') as f:
-            empty_links = []
-            json.dump(empty_links, f)
-    finally:
-        with open(f_links, 'r') as f:
-            links = json.load(f)
-            return links
 
 def select_link():
     """
@@ -224,7 +202,7 @@ def command_write():
     """
     Writes changes to file, and resets the change_count.
     """
-    with open(f_links, 'w') as f:
+    with open(viento_utils.f_links, 'w') as f:
         json.dump(links, f)
 
     print(str(change_count.count) + " change", end='')
@@ -235,21 +213,8 @@ def command_write():
 
 
 ### BEGIN PROGRAM ###
-"""
-The f_links variable can be changed to save the .json file anywhere, under any
-name. If this is done the f_links variable must be changed in the other two scripts,
-however. Those two scripts are the main viento script and the viento_d.py script.
-"""
-dirs = [os.path.expanduser('~/.config'),
-        os.path.expanduser('~/.config/systemd'),
-        os.path.expanduser('~/.config/systemd/user'),
-        os.path.expanduser('~/.viento'),
-        os.path.expanduser('~/.viento/logs'),
-        os.path.expanduser('~/.viento/jobs')]
-
-f_links = dirs[3] + '/links.json'
-check_dirs()
-links = load_links()
+viento_utils.check_directories()
+links = viento_utils.load_links()
 change_count = Counter()
 valid_commands = ['h', 'n', 'r', 'e', 'l', 'w', 'c', 'q']
 
@@ -294,7 +259,7 @@ def main():
 
         elif command == 'c':
             change_count.reset()
-            links = load_links()
+            links = viento_utils.load_links()#####probably has to be global
             header()
 
         elif command == 'q':

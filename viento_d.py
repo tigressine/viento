@@ -6,8 +6,8 @@ script outputs to log files defined by the variables f_log1 and f_log2.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/18/2017
-Version: 0.3.0-beta
+Current Release: 7/21/2017
+Version: 0.4.0-beta
 License: GNU GPLv3
 """
 import os
@@ -16,6 +16,7 @@ import json
 import time
 import signal
 import threading
+import viento_utils
 
 ### CLASSES ###
 class Link():
@@ -28,7 +29,7 @@ class Link():
         """
         Initializes Link object with several attributes.
         """
-        self.f_job = f_job_template.format(attributes[0])
+        self.f_job = viento_utils.f_job.format(attributes[0])
         self.src = attributes[1]
         self.dest = attributes[2]
         self.interval = int(attributes[3])
@@ -50,9 +51,9 @@ class Link():
         if os.path.exists(self.f_job):
             os.remove(self.f_job)
         os.system(self.command)
-        log('TRANSFER: {0} \'{1}\' >> \'{2}\''.format(self.method,
-                                                      self.src,
-                                                      self.dest))
+        viento_utils.log('TRANSFER: {0} \'{1}\' >> \'{2}\''.format(self.method,
+                                                                   self.src,
+                                                                   self.dest))
         if '-r' in self.flags:
             self.react()
         if '-l' in self.flags:
@@ -82,24 +83,24 @@ class Link():
                 if re.search(job_match, line):
                     self.interval = 1
                     self.count = 1
-                    log('STATE: entering heightened state for \'{0}\' {1}'.format(self.src,
-                                                                                  self.method))
-                    log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
-                                                                                    self.interval))
+                    viento_utils.log('STATE: entering heightened state for \'{0}\' {1}'.format(self.src,
+                                                                                               self.method))
+                    viento_utils.log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
+                                                                                                 self.interval))
                     break
         
         if self.count >= react_len[1]:
             self.interval = self.intv_persist
             self.count = 0
-            log('STATE: leaving heightened state for \'{0}\' {1}'.format(self.src,
-                                                                         self.method))
-            log('STATE: {0} interval reverted to every {1} minute(s)'.format(self.method,
-                                                                             self.interval))
+            viento_utils.log('STATE: leaving heightened state for \'{0}\' {1}'.format(self.src,
+                                                                                      self.method))
+            viento_utils.log('STATE: {0} interval reverted to every {1} minute(s)'.format(self.method,
+                                                                                          self.interval))
         elif self.count >= react_len[0] and self.intv_persist != 1:
             self.interval = 2
             self.count += 1
-            log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
-                                                                            self.interval))
+            viento_utils.log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
+                                                                                         self.interval))
         elif self.count > 0:
             self.count += 1
 
@@ -111,63 +112,6 @@ class Link():
 
 
 ### FUNCTIONS ###
-def check_dirs():
-    """
-    Checks for the required directories in the user's home folder.
-    If they do not exist they are created. The required directories are defined
-    by the variable dirs.
-    """
-    for each in dirs:
-        if not os.path.exists(each):
-            os.mkdir(each)
-
-def load_links():
-    """
-    Reads the .json file at the path defined by the variable f_links. If the file
-    exists the script will log an error but continue and process nothing. Perhaps
-    this should be more dramatic.
-    """
-    try:
-        with open(f_links, 'r') as f:
-            x = json.load(f)
-            links = []
-            for each in x:
-                links.append(Link(each))
-            log('FILE: \'{0}\' loaded'.format(f_links))
-            return links
-    except FileNotFoundError:
-        log('FILE: \'{0}\' does not exist'.format(f_links))
-        log('FILE: empty list being returned, no transfers will occur')
-        return []
-
-def log(s):
-    """
-    Logs the passed string variable s into logs defined by the variables f_log1
-    and f_log2. The length of these logs is capped by the variable max_log. If
-    the primary log (f_log1) becomes too large, the secondary log (f_log2) is deleted,
-    f_log1 becomes f_log2, and a new f_log1 is created.
-    """
-    max_log = 10000
-    timestamp = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
-    
-    try:
-        if os.path.getsize(f_log1) > max_log:
-            os.remove(f_log2)
-            os.rename(f_log1, f_log2)
-
-            with open(f_log1, 'w') as f:
-                f.write(timestamp +
-                        'LOG SIZE EXCEEDED: \'{0}\' moved, \'{1}\' deleted'.format(f_log1,
-                                                                                   f_log2))
-                f.write('\n' + timestamp + s + '\n')
-        else:        
-            with open(f_log1, 'a') as f:
-                f.write(timestamp + s + '\n')
-    
-    except FileNotFoundError:
-        with open(f_log1, 'w') as f:
-            f.write(timestamp + s + '\n')
-
 def signal_SIGUSR1_handler(signum, frame):
     """
     WIP
@@ -181,8 +125,8 @@ def main():
     of time has passed before that link's command should be executed. If it has passed,
     the while loop executes that command in a new thread.
     """
-    log('INSTANCE: new instance of Viento started')
-
+    viento_utils.log('INSTANCE: new instance of Viento started', leading_newline=True)
+    viento_utils.check_directories()
     while(True):
         hour = int(time.strftime('%H', time.localtime()))
         minute = int(time.strftime('%M', time.localtime()))
@@ -193,25 +137,9 @@ def main():
                 threading.Thread(target=each.transfer).start()
         time.sleep(60)
 
-
-### PROGRAM START ###
-"""
-These variables define where all the files that Viento needs are located, besides
-the actual .py scripts. These variables should be changeable as you see fit. It will
-be necessary to edit them in all 3 .py scripts however (i.e. this script, the viento_s.py
-script, and the main viento script).
-"""
-dirs = [os.path.expanduser('~/.viento'),
-        os.path.expanduser('~/.viento/logs'),
-        os.path.expanduser('~/.viento/jobs')]
-f_links = dirs[0] + '/links.json'
-f_log1 = dirs[1] + '/daemon.log'
-f_log2 = dirs[1] + '/daemon_old.log'
-f_job_template = dirs[2] + '/job{}.dat'
-
-check_dirs()
-links = load_links()
-
+links_list = viento_utils.load_links()
+links = []
+for each in links_list:
+    links.append(Link(each))
 signal.signal(signal.SIGUSR1, signal_SIGUSR1_handler)
-
 main()

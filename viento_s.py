@@ -264,43 +264,47 @@ f_name_spacing = int((window[0] - spacing[0] - spacing[3] - spacing[4] - 16)/2)
 spacing[1] = f_name_spacing
 spacing[2] = f_name_spacing #CLEANUP######################################
 
-header()
-while(True):
-    print("Enter a command. ('h' for help)")
-    command = input_restricted("> ", valid_commands)
+def main():
+    header()
+    while(True):
+        print("Enter a command. ('h' for help)")
+        command = input_restricted("> ", valid_commands)
 
-    if command == 'h':
-        command_help()
+        if command == 'h':
+            command_help()
 
-    elif command == 'n':
-        command_new()
-        header()
-
-    elif command == 'r':
-        command_remove()
-        header()
-
-    elif command == 'e':
-        command_edit()
-        header()
-
-    elif command == 'l':
-        header()
-        command_list()
-
-    elif command == 'w':
-        command_write()
-
-    elif command == 'c':
-        change_count.reset()
-        links = load_links()
-        header()
-
-    elif command == 'q':
-        header()
-        print("You would like to quit.")
-        if confirm_input():
-            os.system('clear')
-            quit()
-        else:
+        elif command == 'n':
+            command_new()
             header()
+
+        elif command == 'r':
+            command_remove()
+            header()
+
+        elif command == 'e':
+            command_edit()
+            header()
+
+        elif command == 'l':
+            header()
+            command_list()
+
+        elif command == 'w':
+            command_write()
+
+        elif command == 'c':
+            change_count.reset()
+            links = load_links()
+            header()
+
+        elif command == 'q':
+            header()
+            print("You would like to quit.")
+            if confirm_input():
+                os.system('clear')
+                quit()
+            else:
+                header()
+
+if __name__ == '__main__':
+    main()

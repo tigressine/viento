@@ -13,7 +13,7 @@ License: GNU GPLv3
 """
 import os
 import sys
-import viento_s ####### probably wont work on installed vers pls fix
+#import viento_s ####### probably wont work on installed vers pls fix
 
 def check_dirs():
     """
@@ -109,9 +109,8 @@ if command in valid:
               "Current Release: 7/18/2017\n" +
               "License: GNU GPLv3")
 
-    elif command == 'force':
-        viento_s.command_list()
-
+    #elif command == 'force':
+        #viento_s.command_list()
 
     elif command == 'help':
         os.system('clear')

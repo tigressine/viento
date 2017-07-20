@@ -47,6 +47,8 @@ class Link():
         Executes a system command using self.command.
         If enabled, link object can react and learn from the results of this command.
         """
+        if os.path.exists(self.f_job):
+            os.remove(self.f_job)
         os.system(self.command)
         log('TRANSFER: {0} \'{1}\' >> \'{2}\''.format(self.method,
                                                       self.src,

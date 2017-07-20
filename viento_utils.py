@@ -30,6 +30,7 @@ def load_links():
     Reads the links file defined by the variable f_links. If the file exists it is loaded
     into the program. If it does not, an empty list is loaded and the error is logged.
     """
+    check_directories()
     try:
         with open(f_links, 'r') as f:
             links = json.load(f)
@@ -51,7 +52,7 @@ def log(s, leading_newline=False):
     """
     MAX_LOG = 10000
     timestamp = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
-    
+    check_directories()
     try:
         if os.path.getsize(f_log.format(1)) > MAX_LOG:
             try:

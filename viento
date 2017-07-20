@@ -13,6 +13,7 @@ License: GNU GPLv3
 """
 import os
 import sys
+import viento_s ####### probably wont work on installed vers pls fix
 
 def check_dirs():
     """
@@ -67,7 +68,8 @@ except IndexError:
 valid = ['start', 'stop',
          'enable', 'disable',
          'setup', 'status',
-         'version', 'help']
+         'version', 'force',
+         'help']
 
 if command in valid:
     if command == 'start':
@@ -96,7 +98,7 @@ if command in valid:
         os.system('/usr/lib/python3.6/site-packages/viento_s.py')
     
     elif command == 'status':
-        pass
+        os.system('systemctl --user status viento.service')
 
     elif command == 'version':
         os.system('clear')
@@ -106,6 +108,10 @@ if command in valid:
               "Intitial Release: 7/13/2017\n" +
               "Current Release: 7/18/2017\n" +
               "License: GNU GPLv3")
+
+    elif command == 'force':
+        viento_s.command_list()
+
 
     elif command == 'help':
         os.system('clear')

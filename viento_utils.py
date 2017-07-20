@@ -22,7 +22,7 @@ def check_directories():
     """
     for each in directories:
         if not os.path.exists(each):
-            log('FILE: {0} did not exist so it was created'.format(each))
+            #log('FILE: {0} did not exist so it was created'.format(each))
             os.mkdir(each)
 
 def load_links():

@@ -76,7 +76,7 @@ class Link():
         job_match = '|'.join(job_matches)
         # This list pair defines how long the script will remain heightened, in intervals.
         react_len = [2,3]
-
+        ######################Can trip up with no file exist
         with open(self.f_job, 'r') as f:
             lines = f.readlines()
             for line in lines:

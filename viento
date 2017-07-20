@@ -26,6 +26,7 @@ def check_setup():
         quit()
 
     if not os.path.exists(viento_utils.f_service):
+        viento_utils.check_directories()
         print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
         i = input("(Y/n) > ")
         if i in ['y', 'Y', 'yes', 'Yes']:

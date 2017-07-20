@@ -202,6 +202,7 @@ def command_write():
     """
     Writes changes to file, and resets the change_count.
     """
+    viento_utils.check_directories()
     with open(viento_utils.f_links, 'w') as f:
         json.dump(links, f)
 

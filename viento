@@ -36,7 +36,7 @@ def check_setup():
             f_service_example = ['[Unit]\n',
                                  'Description=Viento Cloud Management Utility\n\n',
                                  '[Service]\n',
-                                 'ExecStart=/usr/lib/python3.6/site-packages/viento_d.py\n\n',
+                                 'ExecStart=/usr/lib/python3.6/site-packages/viento_daemon.py\n\n',
                                  '[Install]\n',
                                  'WantedBy=default.target']
             with open(viento_utils.f_service, 'w') as f:

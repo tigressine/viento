@@ -3,7 +3,7 @@
 Viento (Spanish for 'wind') allows you to move through the clouds with ease! This utility is designed on top of [rclone](https://rclone.org/), and is intended to allow users to automatically sync/copy/move files and directories to and from local and remote destinations. Here are a few examples of what Viento can do.
 
 -Copy your music files from your Amazon Drive to Microsoft OneDrive every 2 hours.  
--Sync your Google Photos with Dropbox every 0 minutes.  
+-Sync your Google Photos with Dropbox every 10 minutes.  
 -Backup your Microsoft OneDrive and Dropbox onto a local drive every 24 hours.  
 -Copy your dotfiles into a dotfile folder on your Google Drive.  
 
@@ -19,6 +19,6 @@ TODO:
 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
-Current Release: 7/18/2017  
-Version: 0.3.0-beta  
+Current Release: 7/21/2017  
+Version: 0.4.0-beta  
 License: GNU GPLv3 

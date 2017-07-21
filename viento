@@ -63,7 +63,7 @@ def main():
              'help']
 
     if command in valid:
-        viento_utils.check_directories()
+        check_setup()
         if command == 'start':
             os.system('systemctl --user start viento.service')
             print("Viento service started.")

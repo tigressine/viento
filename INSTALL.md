@@ -20,8 +20,7 @@ $ viento setup
 **(Soon) PyPI:**  
 I plan to add PyPI/pip support soon to reach as large a Linux audience as possible.
 
-
-**Manual Install:**
+**Manual Install:**  
 Only install this way if I have not yet added support for your distro and you cannot install through pip. Before you start, make sure you have *python 3.6*, *python-termcolor*, and *rclone* properly installed. I highly recommend installing these through your distro's package manager rather than trying to manually install them.
 
 To begin, change to a directory where you'd like to download the setup files (like *~/tmp*) then execute these commands:

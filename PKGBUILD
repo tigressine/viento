@@ -19,5 +19,5 @@ pkgver(){
 package() {
     cd viento
 	install -Dm 0777 -t ${pkgdir}/usr/bin viento
-    install -Dm 0777 -t "${pkgdir}/usr/lib/python3.6/site-packages" viento_s.py viento_d.py viento_utils.py 
+    install -Dm 0777 -t "${pkgdir}/usr/lib/python3.6/site-packages" viento_setup.py viento_daemon.py viento_utils.py 
 }

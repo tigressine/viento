@@ -38,15 +38,29 @@ class Link():
         self.flags = ['-r']#attributes[5]
         
         self.count = 0
-        self.intv_persist = self.interval
+        self.intv_persist = self.interval### CLEANUP?VVVV
         self.command = 'rclone -v {0} {1} {2} &> {3}'.format(self.method,
                                                              self.src,
                                                              self.dest,
                                                              self.f_job)
+        self.command_force = 'rclone -v {0} {1} {2}'.format(self.method,
+                                                            self.src,
+                                                            self.dest)
+    def force(self):
+        """
+        Executes a system command based on self.command_force. This command is intended
+        to be used by the main viento program to force a transfer outside of regular
+        intervals or when the daemon is not running.
+        """
+        os.system(self.command_force)
+        viento_utils.log('TRANSFER: {0} \'{1}\' >> \'{2}\' (forced)'.format(self.method,
+                                                                            self.src,
+                                                                            self.dest))
+
     def transfer(self):
         """
-        Executes a system command using self.command.
-        If enabled, link object can react and learn from the results of this command.
+        Executes a system command using self.command. If enabled, link object can react
+        and learn from the results of this command.
         """
         if os.path.exists(self.f_job):
             os.remove(self.f_job)
@@ -106,7 +120,7 @@ class Link():
 
     def learn(self):
         """
-        WIP
+        It'll be lit, but you gotta wait fam.
         """
         pass
 
@@ -137,9 +151,12 @@ def main():
                 threading.Thread(target=each.transfer).start()
         time.sleep(60)
 
+### BEGIN PROGRAM ###
 links_list = viento_utils.load_links()
 links = []
 for each in links_list:
     links.append(Link(each))
 signal.signal(signal.SIGUSR1, signal_SIGUSR1_handler)
-main()
+
+if __name__ == '__main__':
+    main()

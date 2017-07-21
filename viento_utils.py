@@ -14,6 +14,7 @@ License: GNU GPLv3
 import os
 import time
 import json
+from termcolor import cprint
 
 def check_directories():
     """
@@ -24,6 +25,20 @@ def check_directories():
         if not os.path.exists(each):
             #log('FILE: {0} did not exist so it was created'.format(each))
             os.mkdir(each)
+
+def confirm_input(prompt="> ", ask="Is this correct? (Y/n)"):
+    """
+    Prompts the user to validate his/her input.
+    """
+    print(ask)
+    valid = ['y', 'Y', 'yes', 'Yes', 'n', 'N', 'no', 'No']
+    
+    while(True):
+        i = rinput(prompt, valid)
+        if i in valid[:4]:
+            return True
+        elif i in valid[4:]:
+            return False
 
 def load_links():
     """
@@ -83,6 +98,35 @@ def log(s, leading_newline=False):
             if leading_newline == True:
                 f.write('\n')
             f.write(timestamp + s + '\n')
+
+def rinput(prompt, valid, invalid="Invalid input."):
+    """
+    Compares user input to a list of valid responses. If the input is in the valid
+    list, the input is returned, else the invalid statement is printed and the user
+    is allowed to enter input again.
+    """
+    while(True):
+        i = input(prompt)
+        if i in valid:
+            return i
+        else:
+            print(invalid)
+
+def rprint(strings, template, spacing, color=None):
+    """
+    Prints a list of strings spaced out on the screen according to an accompanying
+    template list. Output can be colored via cprint and the color variable.
+    """
+    string_list = []
+    for each in zip(strings, template, spacing):
+        segment = each[1].format(each[0][:each[2]], width=each[2])
+        string_list.append(segment)
+
+    for each in string_list:
+        if color == None:
+            print(each, end='')
+        else:
+            cprint(each, color, end='')
 
 """
 The following variables are paths to various files and directories required for this

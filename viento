@@ -14,7 +14,10 @@ License: GNU GPLv3
 import os
 import sys
 import viento_utils
+import viento_setup
+import viento_daemon
 
+### FUNCTIONS ###
 def check_setup():
     """
     Checks the setup of the user, with regards to the existence of critical files and directories.
@@ -29,7 +32,7 @@ def check_setup():
         viento_utils.check_directories()
         print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
         i = input("(Y/n) > ")
-        if i in ['y', 'Y', 'yes', 'Yes']:
+        if i in ['y', 'Y', 'yes', 'Yes']:#####use rinput
             f_service_example = ['[Unit]\n',
                                  'Description=Viento Cloud Management Utility\n\n',
                                  '[Service]\n',
@@ -94,8 +97,10 @@ def main():
                   "Current Release: 7/21/2017\n" +
                   "License: GNU GPLv3")
 
-        #elif command == 'force':
-            #viento_s.command_list()
+        elif command == 'force':
+            viento_setup.command_list()
+            link = viento_daemon.Link(viento_setup.select_link())
+            link.force()
 
         elif command == 'help':
             os.system('clear')
@@ -107,6 +112,6 @@ def main():
     else:
         print("Invalid command.")
 
-
+### BEGIN PROGRAM ###
 if __name__ == '__main__':
     main()

@@ -212,12 +212,42 @@ def command_write():
     print(" saved to file.")
     change_count.reset()
 
+def command_clear():
+    change_count.reset()
+    links = viento_utils.load_links()#####probably has to be global
+    header()
+
+def command_quit():
+    header()
+    print("You would like to quit.")
+    if confirm_input():
+        os.system('clear')
+        quit()
+    else:
+        header()
+
+def main():
+    valid = {'h':command_help,
+             'n':command_new,
+             'r':command_remove,
+             'e':command_edit,
+             'l':command_list,
+             'w':command_write,
+             'c':command_clear,
+             'q':command_quit}
+    header()
+    while(True):
+        print("Enter a command. ('h' for help)")
+        command = input_restricted("> ", valid)
+        for each in valid:
+            if command == each:
+                valid[each]()
+                break
 
 ### BEGIN PROGRAM ###
 viento_utils.check_directories()
 links = viento_utils.load_links()
 change_count = Counter()
-valid_commands = ['h', 'n', 'r', 'e', 'l', 'w', 'c', 'q']
 
 """
 The following variables determine the size of the current terminal window and then
@@ -225,52 +255,11 @@ save the appropriate spacings into a spacing list. This list is used by the
 command_list() function.
 """
 window = shutil.get_terminal_size()
+####################################################
 spacing = [3, None, None, 8, 6]
 f_name_spacing = int((window[0] - spacing[0] - spacing[3] - spacing[4] - 16)/2)
 spacing[1] = f_name_spacing
 spacing[2] = f_name_spacing #CLEANUP######################################
-
-def main():
-    header()
-    while(True):
-        print("Enter a command. ('h' for help)")
-        command = input_restricted("> ", valid_commands)
-
-        if command == 'h':
-            command_help()
-
-        elif command == 'n':
-            command_new()
-            header()
-
-        elif command == 'r':
-            command_remove()
-            header()
-
-        elif command == 'e':
-            command_edit()
-            header()
-
-        elif command == 'l':
-            header()
-            command_list()
-
-        elif command == 'w':
-            command_write()
-
-        elif command == 'c':
-            change_count.reset()
-            links = viento_utils.load_links()#####probably has to be global
-            header()
-
-        elif command == 'q':
-            header()
-            print("You would like to quit.")
-            if confirm_input():
-                os.system('clear')
-                quit()
-            else:
-                header()
 
 if __name__ == '__main__':
     main()

@@ -83,7 +83,7 @@ def main():
             print("Run 'viento stop' to stop the service right now.")
             
         elif command == 'setup':
-            os.system('/usr/lib/python3.6/site-packages/viento_s.py')
+            os.system('/usr/lib/python3.6/site-packages/viento_setup.py')
         
         elif command == 'status':
             os.system('systemctl --user status viento.service')

@@ -60,7 +60,7 @@ def main():
              'enable', 'disable',
              'setup', 'status',
              'version', 'force',
-             'help']
+             'statistics','help']
 
     if command in valid:
         check_setup()
@@ -101,6 +101,9 @@ def main():
             viento_setup.command_list()
             link = viento_daemon.Link(viento_setup.select_link())
             link.force()
+
+        elif command == 'statistics':
+            pass
 
         elif command == 'help':
             os.system('clear')

@@ -60,7 +60,7 @@ def command_clear():
     variable via a new file read (load_links()). This resets the change_count.
     """
     change_count.reset()
-    links = viento_utils.drafts_load()#####probably has to be global
+    drafts = viento_utils.drafts_load()#####probably has to be global
     header()
 
 def command_edit():

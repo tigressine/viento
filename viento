@@ -98,7 +98,7 @@ def setup_check():
     (also defined in viento_utils) exists then the user is prompted to generate one.
     """
     if not os.path.exists(viento_utils.f_drafts):
-        print("No links file exists. Please run 'viento setup' to make one.")
+        print("No drafts file exists. Please run 'viento setup' to make one.")
         quit()
 
     if not os.path.exists(viento_utils.f_service):

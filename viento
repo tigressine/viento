@@ -18,33 +18,6 @@ import viento_setup
 import viento_daemon
 
 ### FUNCTIONS ###
-def check_setup():
-    """
-    Checks the setup of the user, with regards to the existence of critical files and directories.
-    If no links file (defined in viento_utils) exists then the program exits. If no service file
-    (also defined in viento_utils) exists then the user is prompted to generate one.
-    """
-    if not os.path.exists(viento_utils.f_links):
-        print("No links file exists. Please run 'viento setup' to make one.")
-        quit()
-
-    if not os.path.exists(viento_utils.f_service):
-        viento_utils.check_directories()
-        print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
-        i = input("(Y/n) > ")
-        if i in ['y', 'Y', 'yes', 'Yes']:#####use rinput
-            f_service_example = ['[Unit]\n',
-                                 'Description=Viento Cloud Management Utility\n\n',
-                                 '[Service]\n',
-                                 'ExecStart=/usr/lib/python3.6/site-packages/viento_daemon.py\n\n',
-                                 '[Install]\n',
-                                 'WantedBy=default.target']
-            with open(viento_utils.f_service, 'w') as f:
-                for each in f_service_example:
-                    f.write(each)
-        elif i in ['n', 'N', 'no', 'No']:
-            quit()
-
 def main():
     """
     Allows the user to control the viento daemon and setup utility. This list of commands
@@ -63,7 +36,7 @@ def main():
              'statistics','help']
 
     if command in valid:
-        check_setup()
+        setup_check()
         if command == 'start':
             os.system('systemctl --user start viento.service')
             print("Viento service started.")
@@ -97,12 +70,15 @@ def main():
                   "Current Release: 7/21/2017\n" +
                   "License: GNU GPLv3")
 
-        elif command == 'force':
+        elif command == 'force':#UNFINISHED
+            """
             viento_setup.command_list()
             link = viento_daemon.Link(viento_setup.select_link())
             link.force()
+            """
+            pass
 
-        elif command == 'statistics':
+        elif command == 'statistics':#UNFINISHED
             pass
 
         elif command == 'help':
@@ -114,6 +90,33 @@ def main():
 
     else:
         print("Invalid command.")
+
+def setup_check():
+    """
+    Checks the setup of the user, with regards to the existence of critical files and directories.
+    If no links file (defined in viento_utils) exists then the program exits. If no service file
+    (also defined in viento_utils) exists then the user is prompted to generate one.
+    """
+    if not os.path.exists(viento_utils.f_drafts):
+        print("No links file exists. Please run 'viento setup' to make one.")
+        quit()
+
+    if not os.path.exists(viento_utils.f_service):
+        viento_utils.directories_check()
+        print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
+        i = input("(Y/n) > ")
+        if i in ['y', 'Y', 'yes', 'Yes']:#####use input_restricted
+            f_service_example = ['[Unit]\n',
+                                 'Description=Viento Cloud Management Utility\n\n',
+                                 '[Service]\n',
+                                 'ExecStart=/usr/lib/python3.6/site-packages/viento_daemon.py\n\n',
+                                 '[Install]\n',
+                                 'WantedBy=default.target']
+            with open(viento_utils.f_service, 'w') as f:
+                for each in f_service_example:
+                    f.write(each)
+        elif i in ['n', 'N', 'no', 'No']:
+            quit()
 
 ### BEGIN PROGRAM ###
 if __name__ == '__main__':

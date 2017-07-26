@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 """
-This script provides a CLI to edit the .json file that stores all of the links
+This script provides a CLI to edit the .json file that stores all of the drafts
 used by viento.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/21/2017
-Version: 0.4.0-beta
+Current Release: 7/27/2017
+Version: 0.5.0-beta
 License: GNU GPLv3
 """
 import os
@@ -21,6 +21,7 @@ class Counter:
     Returns a counter object.
     Attributes: count
     Functions: __init__, increment, reset
+    This may get moved to viento_utils or deleted alltogether.
     """
     def __init__(self):
         self.count = 0
@@ -35,7 +36,7 @@ class Counter:
 def main():
     """
     Defines a valid dictionary that contains all possible commands. When the user
-    inputs a command, it is found in the dictionary and executed.
+    inputs a command, if it is found in the dictionary and executed.
     """
     valid = {'c':command_clear,
              'e':command_edit,
@@ -56,30 +57,34 @@ def main():
 
 def command_clear():
     """
-    Clears all changes since the last file read by reconstructing the links
-    variable via a new file read (load_links()). This resets the change_count.
+    Clears all changes since the last file read by reconstructing the drafts
+    variable via a new file read (drafts_load()). This resets the change_count.
     """
+    global drafts #Not sure if necessary
+
     change_count.reset()
-    drafts = viento_utils.drafts_load()#####probably has to be global
+    drafts = viento_utils.drafts_load()
     header()
 
 def command_edit():
     """
-    Lists all links in the links variable. Then the user may select a specific
-    link to modify. After, the user selects which value of the link to modify.
-    Once properly completed, the function saves the edited values and link to the
-    links variable and increments the change_count.
+    Lists all drafts in the drafts variable. Then the user may select a specific
+    draft to modify. After, the user selects which value of the draft to modify.
+    Once properly completed, the function saves the edited values and draft to the
+    drafts variable and increments the change_count.
     """
     header()
     command_list()
 
-    valid = ['1', '2', '3', '4']
+    valid = ['1', '2', '3', '4']#, '5', '6']
     draft = draft_select()
     header()
     print("(1) Source:      " + draft[1] + "\n" +
           "(2) Destination: " + draft[2] + "\n" +
           "(3) Interval:    " + draft[3] + "\n" +
-          "(4) Method:      " + draft[4] + "\n")
+          "(4) Method:      " + draft[4] + "\n")# +
+          #"(5) Flags:       " + draft[5] + "\n" +
+          #"(6) Options:     " + draft[6] + "\n")
     
     while(True):
         print("Enter the number of the value you'd like to modify.")
@@ -106,11 +111,13 @@ def command_help():
           "      c : clear  : Clears all changes.\n" +
           "      q : quit   : Quits this setup utility.\n")
 
-def command_list():
+def command_list(show_header=True):
     """
-    Lists all of the links in the links variable, using rprint() from viento_utils.
+    Lists all of the drafts in the drafts variable, using print_restricted()
+    from viento_utils.
     """
-    header()
+    if show_header == True:
+        header()
     spacing = [3, int((window[0]-33)/2), int((window[0]-33)/2), 8, 6]
     if window[0] % 2 == 0:
         spacing[2] += 1
@@ -129,8 +136,8 @@ def command_list():
 
 def command_new():
     """
-    Retrieves input from the user for a new link, which is then saved to the
-    links variable. This function, if completed properly, increments the
+    Retrieves input from the user for a new draft, which is then saved to the
+    drafts variable. This function, if completed properly, increments the
     change_count.
     """
     header()
@@ -167,7 +174,7 @@ def command_quit():
 
 def command_remove():
     """
-    Retrieves input from the user to remove an existing link. This function,
+    Retrieves input from the user to remove an existing draft. This function,
     if completely properly, increments the change_count.
     """
     header()
@@ -191,11 +198,12 @@ def command_write():
     if change_count.count != 1:
         print("s", end='')
     print(" saved to file.")
+    viento_utils.log('file_write', args=[change_count.count, viento_utils.f_drafts])
     change_count.reset()
 
 def draft_select():
     """
-    Allows the user to select a link from a list of links.
+    Allows the user to select a draft from a list of drafts.
     """
     while(True):
         print("Enter the number of the value you'd like to modify.")
@@ -219,10 +227,8 @@ def header():
     cprint(head + "\n", 'green')
 
 ### BEGIN PROGRAM ###
-viento_utils.directories_check()
 drafts = viento_utils.drafts_load()
 change_count = Counter()
 window = shutil.get_terminal_size()
-
 if __name__ == '__main__':
     main()

@@ -35,6 +35,26 @@ def main():
              'statistics','help']
 
     if command in valid:
+        if command == 'setup':
+            import viento_setup #is this heresy? ;)
+            viento_setup.main()
+
+        elif command == 'version':
+            os.system('clear')
+            print("Viento Cloud Management Utility\n\n" +
+                  "Version: v0.5.0-beta\n" +
+                  "Author: tgsachse (Tiger Sachse)\n" +
+                  "Intitial Release: 7/13/2017\n" +
+                  "Current Release: 7/27/2017\n" +
+                  "License: GNU GPLv3")
+
+        elif command == 'help':
+            os.system('clear')
+            print("Welcome to Viento. Here's a list of commands:\n" +
+                  "start    stop    enable\n" +
+                  "disable  setup   status\n" +
+                  "version  force   help")
+        
         if viento_utils.setup_check() == False:
             """
             Checks for a drafts.json file and a service file.
@@ -67,21 +87,8 @@ def main():
             print("Run 'viento stop' to stop the service right now.")
             viento_utils.log('inst_disable')
 
-        elif command == 'setup':
-            import viento_setup #is this heresy? ;)
-            viento_setup.main()
-
         elif command == 'status':
             os.system('systemctl --user status viento.service')
-
-        elif command == 'version':
-            os.system('clear')
-            print("Viento Cloud Management Utility\n\n" +
-                  "Version: v0.5.0-beta\n" +
-                  "Author: tgsachse (Tiger Sachse)\n" +
-                  "Intitial Release: 7/13/2017\n" +
-                  "Current Release: 7/27/2017\n" +
-                  "License: GNU GPLv3")
 
         elif command == 'force':
             """
@@ -109,13 +116,6 @@ def main():
 
         elif command == 'statistics':#UNFINISHED
             pass
-
-        elif command == 'help':
-            os.system('clear')
-            print("Welcome to Viento. Here's a list of commands:\n" +
-                  "start    stop    enable\n" +
-                  "disable  setup   status\n" +
-                  "version  force   help")
 
     else:
         print("Invalid command.")

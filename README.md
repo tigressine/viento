@@ -11,14 +11,10 @@ Viento is under active development and, with each update, aims to support more a
 
 [Installation](INSTALL.md)
 
-TODO:  
-[] Finish command interface.  
-[] Warn shutdown process if transfer is happening.  
-[] Implement machine learning to change intervals based on use patterns.  
-[] Add rclone setup into Viento setup.  
+[Release Schedule](SCHEDULE.md)  
 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
-Current Release: 7/21/2017  
-Version: 0.4.0-beta  
+Current Release: 7/28/2017  
+Version: 0.5.0-beta  
 License: GNU GPLv3 

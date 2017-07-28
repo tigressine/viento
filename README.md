@@ -11,7 +11,7 @@ Viento is under active development and, with each update, aims to support more a
 
 [Installation](INSTALL.md)
 
-[Release Schedule](SCHEDULE.md)  
+[Upcoming](UPCOMING.md)  
 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  

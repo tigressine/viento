@@ -13,6 +13,8 @@ Viento is under active development and, with each update, aims to support more a
 
 [Upcoming](UPCOMING.md)  
 
+[Change Log](CHANGES.md)
+
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
 Current Release: 8/012017  

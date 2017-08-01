@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 """
-The engine of viento. Transfers files on specified intervals according to a list 
-of 'drafts.' Can accept signals to force transfers, as well as learn from previous
-transfers.
+The engine of viento. Transfers files on specified intervals according to a
+list of 'drafts.' Can accept signals to force transfers, as well as learn from
+previous transfers.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/27/2017
+Current Release: 8/01/2017
 Version: 0.5.0-beta
 License: GNU GPLv3
 """
@@ -21,9 +21,9 @@ import viento_utils
 class Draft:
     """
     Returns a draft object.
-    Attributes: id, source, destination, interval, method, flags, options, job_path,
-                job_contents, count, adjust_lengths, interval_persist, transferring,
-                time_executed, command
+    Attributes: id, source, destination, interval, method, flags, options,
+                job_path, job_contents, count, adjust_lengths,
+                interval_persist, transferring, time_executed, command
     Methods: __init__, main, command_construct, command_run, interval_adjust,
              interval_learn, job_read, statistics_save, transfer_check
     """
@@ -41,7 +41,6 @@ class Draft:
         self.options = ['react']#attributes[6]
 
         self.job_path = viento_utils.f_job.format(self.id)
-        self.job_contents = self.job_read(self.job_path)
 
         self.count = 0
         self.adjust_lengths = [2, 3]
@@ -67,12 +66,11 @@ class Draft:
         if 'learn' in self.options:
             self.interval_learn() 
 
-
     def command_construct(self, redirect_output=True):
         """
         Builds a command string to be executed by the self.main() method.
         """
-        command = 'rclone -vv {0} '.format(self.method)
+        command = 'rclone -v {0} '.format(self.method)
         #if len(self.flags) != 0: 
         #    for each in self.flags:
         #        command += '{0} '.format(each)
@@ -83,12 +81,14 @@ class Draft:
 
     def command_run(self):
         """
-        Refreshes the draft's job file, if it exists, then runs the self.command.
+        Refreshes the draft's job file, if it exists, then runs the command.
+        Afterwards any relevant statistics are saved by statistics_save().
         """
         if os.path.exists(self.job_path):
             os.remove(self.job_path)
         self.transferring = True
         os.system(self.command)
+        self.statistics_save()
         self.transferring = False
 
     def interval_adjust(self):
@@ -110,7 +110,8 @@ class Draft:
             viento_utils.log('state_leave', args=[self.source, self.method])
             viento_utils.log('state_revert', args=[self.method, self.interval])
 
-        elif self.count >= self.adjust_lengths[0] and self.interval_persist != 1:
+        elif (self.count >= self.adjust_lengths[0] and 
+              self.interval_persist != 1):
             self.interval = 2
             self.count += 1
             viento_utils.log('state_change', args=[self.method, self.interval])
@@ -137,14 +138,41 @@ class Draft:
 
     def statistics_save(self):
         """
+        Reads statistics by pulling them from the job file, via regex. Saves
+        them to the statistics file defined by viento_utils.f_stats.
         """
-        pass
+        self.job_contents = self.job_read(self.job_path)
+        match_bytes = (r'^Transferred:(\s*)(?P<bytes>[0-9.]+) ' + 
+                       r'(?P<type>[kMGT]*)Bytes \([0-9.]+ .*Bytes/s\)')
+        match_transfers = r'^Transferred:(\s*)(?P<transfers>[0-9]+)$'
+        for line in reversed(self.job_contents):
+            if re.match(match_bytes, line):
+                value = float(re.match(match_bytes, line).group('bytes'))
+                prefix = re.match(match_bytes, line).group('type')
+                if prefix == '':
+                    stat_bytes = value
+                elif prefix == 'k':
+                    stat_bytes = value*1024**1
+                elif prefix == 'M':
+                    stat_bytes = value*1024**2
+                elif prefix == 'G':
+                    stat_bytes = value*1024**3
+                viento_utils.statistics_record('bytes', int(stat_bytes))
+                break
+
+        for line in reversed(self.job_contents):
+            if re.match(match_transfers, line):
+                stat_transfers = int(re.match(match_transfers,
+                                              line).group('transfers'))
+                viento_utils.statistics_record('transfers', stat_transfers)
+                break
 
     def transfer_check(self):
         """
         Checks the job_contents loaded from the job file. If any of the
         matches_transfers strings are found in the job_contents, returns True.
         """
+        self.job_contents = self.job_read(self.job_path)
         matches_transfers = [': Copied \(new\)$',
                              ': Copied\(replaced existing\)$',
                              ': Deleted$']
@@ -169,22 +197,28 @@ def main():
     while(True):
         hour = int(time.strftime('%H', time.localtime()))
         minute = int(time.strftime('%M', time.localtime()))
-        minutes = minute + (60 * hour)
+        new_minutes = minute + (60 * hour)
+        try:
+            if new_minutes != minutes:
+                viento_utils.statistics_record('uptime_min', 1)
+        except UnboundLocalError:
+            pass
+        minutes = new_minutes
 
         for each in drafts:
-            if minutes % each.interval == 0 and each.time_executed != minutes:
+            if all([minutes % each.interval == 0,
+                    each.time_executed != minutes,
+                    each.transferring == False]):
                 threading.Thread(target=each.main, args=(minutes,)).start()
         time.sleep(20)
 
 def handler_SIGUSR1(signum, frame):
     """
-    WIP
+    Reinitializes the daemon. This reloads the drafts variable and is signalled
+    primarily by viento_setup. When viento_setup saves a new draft file, the
+    daemon is told to reinitialize via this handler.
     """
-    for each in drafts:
-        if each.transferring == True:
-            return True
-    else:
-        return False
+    initialize()
 
 def handler_SIGUSR2(signum, frame):
     """
@@ -202,11 +236,15 @@ def handler_SIGUSR2(signum, frame):
                 break
     os.remove(viento_utils.f_force)
 
+def initialize():
+    global drafts
+
+    viento_utils.directories_check()
+    drafts = []
+    for each in viento_utils.drafts_load():
+        drafts.append(Draft(each))
+
 ### BEGIN PROGRAM ###
 if __name__ == '__main__':
-    viento_utils.directories_check()
-    drafts_list = viento_utils.drafts_load()
-    drafts = []
-    for each in drafts_list:
-        drafts.append(Draft(each))
+    initialize()
     main()

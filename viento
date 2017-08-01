@@ -2,12 +2,12 @@
 """
 This is the core of the viento program. It is the main interface that the
 user will interact with. This script handles commands and is able to manipulate
-the viento_daemon.py script that is behind the viento transfer process. This script
-also provides information about the program.
+the viento_daemon.py script that is behind the viento transfer process. This
+script also provides information about the program.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/27/2017
+Current Release: 8/01/2017
 Version 0.5.0-beta
 License: GNU GPLv3
 """
@@ -19,20 +19,21 @@ import viento_utils
 ### FUNCTIONS ###
 def main():
     """
-    Allows the user to control the viento daemon and setup utility. The valid list of commands
-    will likely be expanded.
+    Allows the user to control the viento daemon and setup utility. The valid
+    list of commands will likely be expanded.
     """
     try:
         command = sys.argv[1]
     except IndexError:
-        print("No command entered. Enter 'viento help' for a list of commands.")
+        print("No command entered. " + 
+              "Enter 'viento help' for a list of commands.")
         quit()
 
     valid = ['start', 'stop',
              'enable', 'disable',
              'setup', 'status',
              'version', 'force',
-             'statistics','help']
+             'stats','help']
 
     if command in valid:
         if command == 'setup':
@@ -45,7 +46,7 @@ def main():
                   "Version: v0.5.0-beta\n" +
                   "Author: tgsachse (Tiger Sachse)\n" +
                   "Intitial Release: 7/13/2017\n" +
-                  "Current Release: 7/27/2017\n" +
+                  "Current Release: 8/01/2017\n" +
                   "License: GNU GPLv3")
 
         elif command == 'help':
@@ -53,16 +54,19 @@ def main():
             print("Welcome to Viento. Here's a list of commands:\n" +
                   "start    stop    enable\n" +
                   "disable  setup   status\n" +
-                  "version  force   help")
+                  "version  force   help\n" +
+                  "stats")
         
         if viento_utils.setup_check() == False:
             """
             Checks for a drafts.json file and a service file.
             """
-            print("You must have a service file for Viento to function properly.")
-            print("If you wish to edit the location of the service file, please edit the " +
-                  "f_service variable in the viento_utils.py source file located in your " +
-                  "python3 site-packages folder.")
+            print("You must have a service file for" +
+                  " Viento to function properly.")
+            print("If you wish to edit the location of the service file, " + 
+                  "please edit the f_service variable in the " + 
+                  "viento_utils.py source file located in your python3 " + 
+                  "site-packages folder.")
             quit()
             
         elif command == 'start':
@@ -74,6 +78,10 @@ def main():
             os.system('systemctl --user stop viento.service')
             print("Viento service stopped.")
             viento_utils.log('inst_stop')
+            try:
+                os.remove(viento_utils.f_pid)
+            except FileNotFoundError:
+                pass
 
         elif command == 'enable':
             os.system('systemctl --user enable viento.service')
@@ -92,12 +100,13 @@ def main():
 
         elif command == 'force':
             """
-            Used to force the daemon to activate a draft regardless of intervals. First this
-            command asks the user which draft to force using the command_list() and
-            draft_select() functions in viento_utils. Then the resulting draft ID is written
-            to a temporary file (f_force) and the pid of the daemon is read from the f_pid
-            file. Finally os.kill() is called to send a signal to the daemon to read the
-            temporary file and activate the draft.
+            Used to force the daemon to activate a draft regardless of
+            intervals. First this command asks the user which draft to force
+            using the command_list() and draft_select() functions in
+            viento_utils. Then the resulting draft ID is written to a temporary
+            file (f_force) and the pid of the daemon is read from the f_pid
+            file. Finally os.kill() is called to send a signal to the daemon to
+            read the temporary file and activate the draft.
             """
             import viento_setup
             os.system('clear')
@@ -112,10 +121,15 @@ def main():
                 os.kill(pid, signal.SIGUSR2)
 
             except FileNotFoundError:
-                print("Viento is not currently running or the pid.dat file has been deleted.")
+                print("Viento is not currently running or the pid.dat " +
+                      "file has been deleted.")
 
-        elif command == 'statistics':#UNFINISHED
-            pass
+        elif command == 'stats':
+            """
+            Runs the statistics_print() command in viento_utils to display the
+            current statistics on the screen.
+            """
+            viento_utils.statistics_print()
 
     else:
         print("Invalid command.")

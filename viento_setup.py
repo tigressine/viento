@@ -5,13 +5,14 @@ used by viento.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/27/2017
+Current Release: 8/01/2017
 Version: 0.5.0-beta
 License: GNU GPLv3
 """
 import os
 import json
 import shutil
+import signal
 import viento_utils
 from termcolor import cprint
 
@@ -35,8 +36,8 @@ class Counter:
 ### FUNCTIONS ###
 def main():
     """
-    Defines a valid dictionary that contains all possible commands. When the user
-    inputs a command, if it is found in the dictionary and executed.
+    Defines a valid dictionary that contains all possible commands. When the
+    user inputs a command, if it is found in the dictionary and executed.
     """
     valid = {'c':command_clear,
              'e':command_edit,
@@ -68,10 +69,10 @@ def command_clear():
 
 def command_edit():
     """
-    Lists all drafts in the drafts variable. Then the user may select a specific
-    draft to modify. After, the user selects which value of the draft to modify.
-    Once properly completed, the function saves the edited values and draft to the
-    drafts variable and increments the change_count.
+    Lists all drafts in the drafts variable. Then the user may select a
+    specific draft to modify. After, the user selects which value of the draft
+    to modify. Once properly completed, the function saves the edited values
+    and draft to the drafts variable and increments the change_count.
     """
     header()
     command_list()
@@ -95,6 +96,7 @@ def command_edit():
         if viento_utils.confirm_input():
             change_count.increment()
             drafts[int(draft[0]) - 1][int(i)] = new
+            break
 
 def command_help():
     """
@@ -198,8 +200,15 @@ def command_write():
     if change_count.count != 1:
         print("s", end='')
     print(" saved to file.")
-    viento_utils.log('file_write', args=[change_count.count, viento_utils.f_drafts])
+    viento_utils.log('file_write', args=[change_count.count,
+                                         viento_utils.f_drafts])
     change_count.reset()
+    try:
+        with open(viento_utils.f_pid, 'r') as f:
+            pid = int(f.read())
+        os.kill(pid, signal.SIGUSR1)
+    except FileNotFoundError:
+        pass
 
 def draft_select():
     """
@@ -213,13 +222,14 @@ def draft_select():
                 if draft[0] == i:
                     return draft
         else:
-            print("Invalid input. Please enter a number between 1 and " + str(len(drafts)) + ".")
+            print("Invalid input. Please enter a number between 1 and " +
+                  str(len(drafts)) + ".")
 
 def header():
     """
     Clears the current window, then outputs the header defined by the variable
-    head. The header also includes the total number of unsaved changes made by the
-    user since the last write to file.
+    head. The header also includes the total number of unsaved changes made by
+    the user since the last write to file.
     """
     os.system('clear')
     text = "Viento Setup Utility (" + str(change_count.count) + " changes)"

@@ -15,6 +15,6 @@ Viento is under active development and, with each update, aims to support more a
 
 Author: tgsachse (Tiger Sachse)  
 Initial Release: 7/13/2017  
-Current Release: 7/28/2017  
+Current Release: 8/012017  
 Version: 0.5.0-beta  
 License: GNU GPLv3 

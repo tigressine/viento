@@ -1,30 +1,20 @@
 #!/usr/bin/env python3
 """
-Common utility functions for viento. This script includes functions used by other aspects
-of the viento program, as well as definitions for all non-.py files used by the program.
-If you would like to change the destinations for any of the non-.py files feel free to
-edit them below.
+Common utility functions for viento. This script includes functions used by
+other aspects of the viento program, as well as paths for all non-.py files
+used by the program. If you would like to change the paths for any of the
+non-.py files feel free to edit them below.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/21/2017
-Version: 0.4.0-beta
+Current Release: 8/01/2017
+Version: 0.5.0-beta
 License: GNU GPLv3
 """
 import os
 import time
 import json
 from termcolor import cprint
-
-def check_directories():
-    """
-    Checks for the necessary directories in the user's home folder. If they do not exist
-    they are created. The necessary directories are defined by the directories variable.
-    """
-    for each in directories:
-        if not os.path.exists(each):
-            #log('FILE: {0} did not exist so it was created'.format(each))
-            os.mkdir(each)
 
 def confirm_input(prompt="> ", ask="Is this correct? (Y/n)"):
     """
@@ -34,76 +24,46 @@ def confirm_input(prompt="> ", ask="Is this correct? (Y/n)"):
     valid = ['y', 'Y', 'yes', 'Yes', 'n', 'N', 'no', 'No']
     
     while(True):
-        i = rinput(prompt, valid)
+        i = input_restricted(prompt, valid)
         if i in valid[:4]:
             return True
         elif i in valid[4:]:
             return False
 
-def load_links():
+def directories_check():
     """
-    Reads the links file defined by the variable f_links. If the file exists it is loaded
-    into the program. If it does not, an empty list is loaded and the error is logged.
+    Checks for the necessary directories in the user's home folder. If they do
+    not exist they are created. The necessary directories are defined by the
+    directories list.
     """
-    check_directories()
+    for each in directories:
+        if not os.path.exists(each):
+            os.mkdir(each)
+
+def drafts_load():
+    """
+    Reads the drafts file defined by the variable f_drafts. If the file exists
+    it is loaded into the program. If it does not, an empty list is loaded and
+    the error is logged.
+    """
+    directories_check()
     try:
-        with open(f_links, 'r') as f:
-            links = json.load(f)
-            log('FILE: \'{0}\' loaded'.format(f_links))
-            return links
+        with open(f_drafts, 'r') as f:
+            drafts = json.load(f)
+            log('file_load', args=[f_drafts])
     except FileNotFoundError:
-        with open(f_links, 'w') as f:
-            links = []
-            json.dump(links, f)
-            log('FILE: \'{0}\' does not exist'.format(f_links))
-            log('FILE: empty list being returned, no transfer will occur')
-            return links
+        with open(f_drafts, 'w') as f:
+            drafts = []
+            json.dump(drafts, f)
+            log('file_dne', args=[f_drafts])
+            log('file_empty')
+    return drafts
 
-def log(s, leading_newline=False):
+def input_restricted(prompt, valid, invalid="Invalid input."):
     """
-    Writes the s string into a log file, defined by the variable f_log. If the primary
-    log exceeds a certain size (MAX_LOG) then the log is shelved and a new log is created.
-    After 5 total logs exist the oldest log will be deleted before each shelving action.
-    """
-    MAX_LOG = 10000
-    timestamp = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
-    check_directories()
-    try:
-        if os.path.getsize(f_log.format(1)) > MAX_LOG:
-            try:
-                os.remove(f_log.format(5))
-            except OSError:
-                pass
-
-            for i in reversed(range(2,6)):
-                try:
-                    os.rename(f_log.format(i-1), f_log.format(i))
-                except OSError:
-                    pass
-            
-            with open(f_log.format(1), 'w') as f:
-                if leading_newline == True:
-                    f.write('\n')
-                f.write(timestamp +
-                        'FILE: log size exceeded, logs shifted' +
-                        '\n' + timestamp + s + '\n')
-        else:        
-            with open(f_log.format(1), 'a') as f:
-                if leading_newline == True:
-                    f.write('\n')
-                f.write(timestamp + s + '\n')
-    
-    except FileNotFoundError:
-        with open(f_log.format(1), 'w') as f:
-            if leading_newline == True:
-                f.write('\n')
-            f.write(timestamp + s + '\n')
-
-def rinput(prompt, valid, invalid="Invalid input."):
-    """
-    Compares user input to a list of valid responses. If the input is in the valid
-    list, the input is returned, else the invalid statement is printed and the user
-    is allowed to enter input again.
+    Compares user input to a list of valid responses. If the input is in the
+    valid list, the input is returned, else the invalid statement is printed
+    and the user is allowed to enter input again.
     """
     while(True):
         i = input(prompt)
@@ -112,10 +72,34 @@ def rinput(prompt, valid, invalid="Invalid input."):
         else:
             print(invalid)
 
-def rprint(strings, template, spacing, color=None):
+def log(key, args=[], leading_newline=False):
     """
-    Prints a list of strings spaced out on the screen according to an accompanying
-    template list. Output can be colored via cprint and the color variable.
+    Writes a formatted string (key formatted with args) to the log
+    file (f_log). If the primary log file becomes too large, the logs are
+    shifted using shift_logs().
+    """
+    directories_check()###
+    timestamp = time.strftime('[%Y-%m-%d %H:%M:%S] ', time.localtime())
+    entry = log_entries[key].format(args)
+
+    try:
+        f = open(f_log.format(1), 'a')
+    except FileNotFoundError:
+        f = open(f_log.format(1), 'w')
+    finally:
+        if leading_newline == True:
+            f.write('\n')
+        f.write(timestamp + entry + '\n')
+        f.close()
+
+    if os.path.getsize(f_log.format(1)) > MAX_LOG:
+        shift_logs()
+
+def print_restricted(strings, template, spacing, color=None):
+    """
+    Prints a list of strings spaced out on the screen according to an
+    accompanying template list. Output can be colored via cprint and the color
+    variable.
     """
     string_list = []
     for each in zip(strings, template, spacing):
@@ -128,12 +112,105 @@ def rprint(strings, template, spacing, color=None):
         else:
             cprint(each, color, end='')
 
+def setup_check():
+    """
+    Checks for the existence of critical files and directories. If no drafts
+    file (defined in viento_utils) exists then the program exits. If no service
+    file (also defined in viento_utils) exists then the user is prompted to
+    generate one. The template for this generation is defined by the
+    list t_service.
+    """
+    if not os.path.exists(f_drafts):
+        print("No drafts file exists. Please run 'viento setup' to make one.")
+        return False
+
+    if not os.path.exists(f_service):
+        directories_check()
+        s = ("No service file exists." + 
+             "Would you like to create one at {}?".format(f_service))
+        if confirm_input(prompt="(Y/n) > ", ask=s):
+            with open(f_service, 'w') as f:
+                for each in t_service:
+                    f.write(each)
+        else:
+            return False
+    return True
+
+def shift_logs():
+    """
+    If the primary log exceeds a certain size (MAX_LOG) then the log is shelved
+    and a new log is created. The maximum number of log files is defined by
+    MAX_LOGS. After the max number of logs have been produced the oldest log
+    will be deleted before each shelving action.
+    """
+    try:
+        os.remove(f_log.format(MAX_LOGS))
+    except OSError:
+        pass
+    
+    for x in reversed(range(2, MAX_LOGS+1)):
+        try:
+            os.rename(f_log.format(x-1), f_log.format(x))
+        except OSError:
+            pass
+
+def statistics_open():
+    """
+    Opens the statistics file, as defined by f_stats. If no file is found then
+    statistics are generated as defined by the t_statistics dict.
+    """
+    try:
+        with open(f_stats, 'r') as f:
+            stats = json.load(f)
+    except FileNotFoundError:
+        stats = t_statistics
+    return stats
+
+def statistics_print():
+    """
+    Prints statistics onto the screen using print_restricted(). Called in the
+    main viento script.
+    """
+    stats = statistics_open()
+    template = ['{:>{width}}',' {:<{width}}']
+    spacing = [30,40]
+    
+    for k,v in stats.items():
+        print_restricted([v[0],str(v[1])], template, spacing)
+        print("")
+    
+def statistics_record(stat, value):
+    """
+    Increments the appropriate stat by a defined value, and then saves to file.
+    """
+    stats = statistics_open()
+    for key in stats:
+        if stat == key:
+            stats[key][1] += int(value)
+
+    if stat == 'bytes':
+        stats['d_gigabytes'][1] = float(stats['bytes'][1]/1024/1024/1024)
+
+    elif stat == 'uptime_min':
+        if stats['d_uptime_days'][1][2] < 59:
+            stats['d_uptime_days'][1][2] += 1
+        else:
+            stats['d_uptime_days'][1][2] = 0
+            if stats['d_uptime_days'][1][1] < 23:
+                stats['d_uptime_days'][1][1] += 1
+            else:
+                stats['d_uptime_days'][1][1] = 0
+                stats['d_uptime_days'][1][0] += 1
+
+    with open(f_stats, 'w') as f:
+        json.dump(stats, f)
+
 """
-The following variables are paths to various files and directories required for this
-program to function properly. By design, these directories and files can be renamed here
-and the rest of the program will follow suit. If you feel the need to change the paths
-for the program's files, please change them here and not elsewhere, otherwise you'll stumble
-into heaps of FileNotFoundErrors. :)
+The following variables are paths to various files and directories required for
+this program to function properly. By design, these directories and files can
+be renamed here and the rest of the program will follow suit. If you feel the
+need to change the paths for the program's files, please change them here and
+not elsewhere, otherwise you'll stumble into heaps of FileNotFoundErrors. :)
 """
 directories = [os.path.expanduser('~/.config'),
                os.path.expanduser('~/.config/systemd'),
@@ -141,7 +218,43 @@ directories = [os.path.expanduser('~/.config'),
                os.path.expanduser('~/.viento'),
                os.path.expanduser('~/.viento/logs'),
                os.path.expanduser('~/.viento/jobs')]
-f_links = directories[3] + '/links.json'
 f_service = directories[2] + '/viento.service'
+f_drafts = directories[3] + '/drafts.json'
+f_pid = directories[3] + '/pid.dat'
+f_force = directories[3] + '/force.tmp'
+f_stats = directories[4] + '/stats.log'
 f_log = directories[4] + '/log{}.log'
 f_job = directories[5] + '/job{}.dat'
+
+MAX_LOG = 10000
+MAX_LOGS = 5
+
+t_service = ['[Unit]\n',
+             'Description=Viento Cloud Management Utility\n\n',
+             '[Service]\n',
+             'ExecStart=/usr/lib/python3.6/site-packages/viento_daemon.py\n\n',
+             '[Install]\n',
+             'WantedBy=default.target']
+
+t_statistics = {'transfers' : ["Total Transfers:", 0],
+                'bytes' : ["Bytes transferred:", 0],
+                'uptime_min' : ["Uptime (minutes):", 0],
+                'd_uptime_days' : ["Uptime (days/hours/minutes):", [0,0,0]],
+                'd_gigabytes' : ["Gigabytes transferred:", 0.000]}
+
+log_entries = {
+    'inst_new':'INSTANCE: new instance of Viento started',
+    'inst_start':'INSTANCE: Viento start command executed',
+    'inst_stop':'INSTANCE: Viento stop command executed',
+    'inst_enable':'INSTANCE: Viento enabled at boot',
+    'inst_disable':'INSTANCE: Viento disabled at boot',
+    'state_enter':'STATE: entering heightened state for \'{0[0]}\' {0[1]}',
+    'state_change':'STATE: {0[0]} interval changed to every {0[1]} minute(s)',
+    'state_leave':'STATE: leaving heightened state for \'{0[0]}\' {0[1]}',
+    'state_revert':'STATE: {0[0]} interval reverted to every {0[1]} minute(s)',
+    'trans_success':'TRANSFER: {0[0]} \'{0[1]}\' >> \'{0[2]}\'',
+    'trans_force':'TRANSFER: {0[0]} \'{0[1]}\' >> \'{0[2]}\' (forced)',
+    'file_write':'FILE: {0[0]} change(s) made to \'{0[1]}\'',
+    'file_load':'FILE: \'{0[0]}\' loaded',
+    'file_dne':'FILE: \'{0[0]}\' does not exist',
+    'file_empty':'FILE: empty list being returned, no transfer will occur'}

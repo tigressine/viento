@@ -1,162 +1,250 @@
 #! /usr/bin/env python3
 """
-This script is the central daemon behind Viento. It pulls custom links from a .json
-file, then it executes rclone commands based on information in the custom links. The
-script outputs to log files defined by the variables f_log1 and f_log2.
+The engine of viento. Transfers files on specified intervals according to a
+list of 'drafts.' Can accept signals to force transfers, as well as learn from
+previous transfers.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/21/2017
-Version: 0.4.0-beta
+Current Release: 8/01/2017
+Version: 0.5.0-beta
 License: GNU GPLv3
 """
 import os
 import re
-import json
 import time
 import signal
 import threading
 import viento_utils
 
 ### CLASSES ###
-class Link():
+class Draft:
     """
-    Returns Link object.
-    Attributes: f_job, src, dest, interval, method, flags, count, intv_persist, command
-    Functions: __init__, transfer, react, learn
+    Returns a draft object.
+    Attributes: id, source, destination, interval, method, flags, options,
+                job_path, job_contents, count, adjust_lengths,
+                interval_persist, transferring, time_executed, command
+    Methods: __init__, main, command_construct, command_run, interval_adjust,
+             interval_learn, job_read, statistics_save, transfer_check
     """
     def __init__(self, attributes):
         """
-        Initializes Link object with several attributes.
+        Defines a whole ton of attributes based on the attributes argument. The
+        job file is read and self.command is constructed.
         """
-        self.f_job = viento_utils.f_job.format(attributes[0])
-        self.src = attributes[1]
-        self.dest = attributes[2]
+        self.id = attributes[0]
+        self.source = attributes[1]
+        self.destination = attributes[2]
         self.interval = int(attributes[3])
         self.method = attributes[4]
-        # Not yet implemented.
-        self.flags = ['-r']#attributes[5]
-        
+        #self.flags = attributes[5]
+        self.options = ['react']#attributes[6]
+
+        self.job_path = viento_utils.f_job.format(self.id)
+
         self.count = 0
-        self.intv_persist = self.interval### CLEANUP?VVVV
-        self.command = 'rclone -v {0} {1} {2} &> {3}'.format(self.method,
-                                                             self.src,
-                                                             self.dest,
-                                                             self.f_job)
-        self.command_force = 'rclone -v {0} {1} {2}'.format(self.method,
-                                                            self.src,
-                                                            self.dest)
-    def force(self):
-        """
-        Executes a system command based on self.command_force. This command is intended
-        to be used by the main viento program to force a transfer outside of regular
-        intervals or when the daemon is not running.
-        """
-        os.system(self.command_force)
-        viento_utils.log('TRANSFER: {0} \'{1}\' >> \'{2}\' (forced)'.format(self.method,
-                                                                            self.src,
-                                                                            self.dest))
+        self.adjust_lengths = [2, 3]
+        self.interval_persist = self.interval
 
-    def transfer(self):
+        self.transferring = False
+        self.time_executed = 0
+        self.command = self.command_construct()
+
+    def main(self, time_executed):
         """
-        Executes a system command using self.command. If enabled, link object can react
-        and learn from the results of this command.
+        Calls self.command_run() and logs the action. Then calls functions that
+        correspond to the options found in the self.options variable.
         """
-        if os.path.exists(self.f_job):
-            os.remove(self.f_job)
+        self.time_executed = time_executed
+        self.command_run()
+        viento_utils.log('trans_success', args=[self.method,
+                                                self.source,
+                                                self.destination])
+
+        if 'adjust' in self.options:
+            self.interval_adjust()
+        if 'learn' in self.options:
+            self.interval_learn() 
+
+    def command_construct(self, redirect_output=True):
+        """
+        Builds a command string to be executed by the self.main() method.
+        """
+        command = 'rclone -v {0} '.format(self.method)
+        #if len(self.flags) != 0: 
+        #    for each in self.flags:
+        #        command += '{0} '.format(each)
+        command += '{0} {1} '.format(self.source, self.destination)
+        if redirect_output == True:
+            command += '&> {0}'.format(self.job_path)
+        return command
+
+    def command_run(self):
+        """
+        Refreshes the draft's job file, if it exists, then runs the command.
+        Afterwards any relevant statistics are saved by statistics_save().
+        """
+        if os.path.exists(self.job_path):
+            os.remove(self.job_path)
+        self.transferring = True
         os.system(self.command)
-        viento_utils.log('TRANSFER: {0} \'{1}\' >> \'{2}\''.format(self.method,
-                                                                   self.src,
-                                                                   self.dest))
-        if '-r' in self.flags:
-            self.react()
-        if '-l' in self.flags:
-            self.learn()
+        self.statistics_save()
+        self.transferring = False
 
-    def react(self):
+    def interval_adjust(self):
         """
-        If enabled, the script will react to the outcome of the command executed in
-        transfer(). It does this by using the re module to scan a job.dat file (which
-        contains the verbose output of the command executed in transfer()). If the re
-        module finds a match in the .dat file (e.g. the string ':Copied (new)') then
-        the script will put itself into a heightened mode. This heightened mode results
-        in a shortened interval for transfers, starting at 1 minute intervals and, after
-        enough iterations of transfer() without any more activity, the intervals decay
-        back to original values (stored in self.intv_persist).
+        If the daemon detects that changes have been made in a transferred
+        directory, then the daemon will change the interval for the changed
+        directory temporarily to increase the likelihood of transferring newly
+        changed files as quickly as possible.
         """
-        job_matches = [': Copied \(new\)',
-                       ': Copied\(replaced existing\)',
-                       ': Deleted']
-        job_match = '|'.join(job_matches)
-        # This list pair defines how long the script will remain heightened, in intervals.
-        react_len = [2,3]
-        ######################Can trip up with no file exist
-        with open(self.f_job, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                if re.search(job_match, line):
-                    self.interval = 1
-                    self.count = 1
-                    viento_utils.log('STATE: entering heightened state for \'{0}\' {1}'.format(self.src,
-                                                                                               self.method))
-                    viento_utils.log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
-                                                                                                 self.interval))
-                    break
-        
-        if self.count >= react_len[1]:
-            self.interval = self.intv_persist
+        if self.transfer_check():
+            self.interval = 1
+            self.count = 1
+            viento_utils.log('state_enter', args=[self.source, self.method])
+            viento_utils.log('state_change', args=[self.method, self.interval])
+
+        elif self.count >= self.adjust_lengths[1]:
+            self.interval = self.interval_persist
             self.count = 0
-            viento_utils.log('STATE: leaving heightened state for \'{0}\' {1}'.format(self.src,
-                                                                                      self.method))
-            viento_utils.log('STATE: {0} interval reverted to every {1} minute(s)'.format(self.method,
-                                                                                          self.interval))
-        elif self.count >= react_len[0] and self.intv_persist != 1:
+            viento_utils.log('state_leave', args=[self.source, self.method])
+            viento_utils.log('state_revert', args=[self.method, self.interval])
+
+        elif (self.count >= self.adjust_lengths[0] and 
+              self.interval_persist != 1):
             self.interval = 2
             self.count += 1
-            viento_utils.log('STATE: {0} interval changed to every {1} minute(s)'.format(self.method,
-                                                                                         self.interval))
+            viento_utils.log('state_change', args=[self.method, self.interval])
+
         elif self.count > 0:
             self.count += 1
 
-    def learn(self):
+    def interval_learn(self):
         """
         It'll be lit, but you gotta wait fam.
         """
         pass
 
+    def job_read(self, path):
+        """
+        Reads the job file.
+        """
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                contents = f.readlines()
+        except FileNotFoundError:
+            contents = []
+        return contents
+
+    def statistics_save(self):
+        """
+        Reads statistics by pulling them from the job file, via regex. Saves
+        them to the statistics file defined by viento_utils.f_stats.
+        """
+        self.job_contents = self.job_read(self.job_path)
+        match_bytes = (r'^Transferred:(\s*)(?P<bytes>[0-9.]+) ' + 
+                       r'(?P<type>[kMGT]*)Bytes \([0-9.]+ .*Bytes/s\)')
+        match_transfers = r'^Transferred:(\s*)(?P<transfers>[0-9]+)$'
+        for line in reversed(self.job_contents):
+            if re.match(match_bytes, line):
+                value = float(re.match(match_bytes, line).group('bytes'))
+                prefix = re.match(match_bytes, line).group('type')
+                if prefix == '':
+                    stat_bytes = value
+                elif prefix == 'k':
+                    stat_bytes = value*1024**1
+                elif prefix == 'M':
+                    stat_bytes = value*1024**2
+                elif prefix == 'G':
+                    stat_bytes = value*1024**3
+                viento_utils.statistics_record('bytes', int(stat_bytes))
+                break
+
+        for line in reversed(self.job_contents):
+            if re.match(match_transfers, line):
+                stat_transfers = int(re.match(match_transfers,
+                                              line).group('transfers'))
+                viento_utils.statistics_record('transfers', stat_transfers)
+                break
+
+    def transfer_check(self):
+        """
+        Checks the job_contents loaded from the job file. If any of the
+        matches_transfers strings are found in the job_contents, returns True.
+        """
+        self.job_contents = self.job_read(self.job_path)
+        matches_transfers = [': Copied \(new\)$',
+                             ': Copied\(replaced existing\)$',
+                             ': Deleted$']
+        for line in self.job_contents:
+            if re.match('|'.join(matches_transfers), line):
+                return True
+        else:
+            return False
 
 ### FUNCTIONS ###
-def signal_SIGUSR1_handler(signum, frame):
-    """
-    WIP
-    """
-    pass
-
 def main():
     """
-    Contains the script's main while loop that drives the entire daemon. For each link
-    described in the list links, the while loop determines if the appropriate interval
-    of time has passed before that link's command should be executed. If it has passed,
-    the while loop executes that command in a new thread.
+    A while loop that checks the time periodically. If the checked time divided
+    by the interval of a draft equals 0 (if the interval has been reached) then
+    the main() method of the draft is executed.
     """
-    viento_utils.log('INSTANCE: new instance of Viento started', leading_newline=True)
-    viento_utils.check_directories()
+    with open(viento_utils.f_pid, 'w') as f:
+        f.write(str(os.getpid()))
+    signal.signal(signal.SIGUSR1, handler_SIGUSR1)
+    signal.signal(signal.SIGUSR2, handler_SIGUSR2)
+    viento_utils.log('inst_new', leading_newline=True)
     while(True):
         hour = int(time.strftime('%H', time.localtime()))
         minute = int(time.strftime('%M', time.localtime()))
-        minutes = minute + (60 * hour)
+        new_minutes = minute + (60 * hour)
+        try:
+            if new_minutes != minutes:
+                viento_utils.statistics_record('uptime_min', 1)
+        except UnboundLocalError:
+            pass
+        minutes = new_minutes
 
-        for each in links:
-            if minutes % each.interval == 0:
-                threading.Thread(target=each.transfer).start()
-        time.sleep(60)
+        for each in drafts:
+            if all([minutes % each.interval == 0,
+                    each.time_executed != minutes,
+                    each.transferring == False]):
+                threading.Thread(target=each.main, args=(minutes,)).start()
+        time.sleep(20)
+
+def handler_SIGUSR1(signum, frame):
+    """
+    Reinitializes the daemon. This reloads the drafts variable and is signalled
+    primarily by viento_setup. When viento_setup saves a new draft file, the
+    daemon is told to reinitialize via this handler.
+    """
+    initialize()
+
+def handler_SIGUSR2(signum, frame):
+    """
+    Reads the ID to force from the f_force file. Then forces that draft to
+    transfer and logs the action. Finally removes the f_force temporary file.
+    """
+    with open(viento_utils.f_force, 'r') as f:
+        force_id = f.read()
+        for each in drafts:
+            if each.id == force_id:
+                each.command_run()
+                viento_utils.log('trans_force', args=[each.method,
+                                                      each.source,
+                                                      each.destination])
+                break
+    os.remove(viento_utils.f_force)
+
+def initialize():
+    global drafts
+
+    viento_utils.directories_check()
+    drafts = []
+    for each in viento_utils.drafts_load():
+        drafts.append(Draft(each))
 
 ### BEGIN PROGRAM ###
-links_list = viento_utils.load_links()
-links = []
-for each in links_list:
-    links.append(Link(each))
-signal.signal(signal.SIGUSR1, signal_SIGUSR1_handler)
-
 if __name__ == '__main__':
+    initialize()
     main()

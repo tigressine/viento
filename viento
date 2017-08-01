@@ -2,112 +2,134 @@
 """
 This is the core of the viento program. It is the main interface that the
 user will interact with. This script handles commands and is able to manipulate
-the viento_d.py daemon that drives the viento transfer process. This script
-also provides data about the program.
+the viento_daemon.py script that is behind the viento transfer process. This
+script also provides information about the program.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 7/21/2017
-Version 0.4.0-beta
+Current Release: 8/01/2017
+Version 0.5.0-beta
 License: GNU GPLv3
 """
 import os
 import sys
+import signal
 import viento_utils
-import viento_setup
-import viento_daemon
 
 ### FUNCTIONS ###
-def check_setup():
-    """
-    Checks the setup of the user, with regards to the existence of critical files and directories.
-    If no links file (defined in viento_utils) exists then the program exits. If no service file
-    (also defined in viento_utils) exists then the user is prompted to generate one.
-    """
-    if not os.path.exists(viento_utils.f_links):
-        print("No links file exists. Please run 'viento setup' to make one.")
-        quit()
-
-    if not os.path.exists(viento_utils.f_service):
-        viento_utils.check_directories()
-        print("No service file exists. Would you like to create one at {}".format(viento_utils.f_service))
-        i = input("(Y/n) > ")
-        if i in ['y', 'Y', 'yes', 'Yes']:#####use rinput
-            f_service_example = ['[Unit]\n',
-                                 'Description=Viento Cloud Management Utility\n\n',
-                                 '[Service]\n',
-                                 'ExecStart=/usr/lib/python3.6/site-packages/viento_daemon.py\n\n',
-                                 '[Install]\n',
-                                 'WantedBy=default.target']
-            with open(viento_utils.f_service, 'w') as f:
-                for each in f_service_example:
-                    f.write(each)
-        elif i in ['n', 'N', 'no', 'No']:
-            quit()
-
 def main():
     """
-    Allows the user to control the viento daemon and setup utility. This list of commands
-    will likely be expanded.
+    Allows the user to control the viento daemon and setup utility. The valid
+    list of commands will likely be expanded.
     """
     try:
         command = sys.argv[1]
     except IndexError:
-        print("No command entered. Enter 'viento help' for a list of commands.")
+        print("No command entered. " + 
+              "Enter 'viento help' for a list of commands.")
         quit()
 
     valid = ['start', 'stop',
              'enable', 'disable',
              'setup', 'status',
              'version', 'force',
-             'help']
+             'stats','help']
 
     if command in valid:
-        check_setup()
-        if command == 'start':
-            os.system('systemctl --user start viento.service')
-            print("Viento service started.")
-
-        elif command == 'stop':
-            os.system('systemctl --user stop viento.service')
-            print("Viento service stopped.")
-
-        elif command == 'enable':
-            os.system('systemctl --user enable viento.service')
-            print("Viento service enabled at login on next boot")
-            print("Run 'viento start' to start the service right now.")
-
-        elif command == 'disable':
-            os.system('systemctl --user disable viento.service')
-            print("Viento service disabled at login on next boot")
-            print("Run 'viento stop' to stop the service right now.")
-            
-        elif command == 'setup':
-            os.system('/usr/lib/python3.6/site-packages/viento_setup.py')
-        
-        elif command == 'status':
-            os.system('systemctl --user status viento.service')
+        if command == 'setup':
+            import viento_setup #is this heresy? ;)
+            viento_setup.main()
 
         elif command == 'version':
             os.system('clear')
             print("Viento Cloud Management Utility\n\n" +
-                  "Version: v0.4.0-beta\n" +
+                  "Version: v0.5.0-beta\n" +
                   "Author: tgsachse (Tiger Sachse)\n" +
                   "Intitial Release: 7/13/2017\n" +
-                  "Current Release: 7/21/2017\n" +
+                  "Current Release: 8/01/2017\n" +
                   "License: GNU GPLv3")
-
-        elif command == 'force':
-            viento_setup.command_list()
-            link = viento_daemon.Link(viento_setup.select_link())
-            link.force()
 
         elif command == 'help':
             os.system('clear')
             print("Welcome to Viento. Here's a list of commands:\n" +
                   "start    stop    enable\n" +
                   "disable  setup   status\n" +
-                  "version  help")
+                  "version  force   help\n" +
+                  "stats")
+        
+        if viento_utils.setup_check() == False:
+            """
+            Checks for a drafts.json file and a service file.
+            """
+            print("You must have a service file for" +
+                  " Viento to function properly.")
+            print("If you wish to edit the location of the service file, " + 
+                  "please edit the f_service variable in the " + 
+                  "viento_utils.py source file located in your python3 " + 
+                  "site-packages folder.")
+            quit()
+            
+        elif command == 'start':
+            os.system('systemctl --user start viento.service')
+            print("Viento service started.")
+            viento_utils.log('inst_start')
+
+        elif command == 'stop':
+            os.system('systemctl --user stop viento.service')
+            print("Viento service stopped.")
+            viento_utils.log('inst_stop')
+            try:
+                os.remove(viento_utils.f_pid)
+            except FileNotFoundError:
+                pass
+
+        elif command == 'enable':
+            os.system('systemctl --user enable viento.service')
+            print("Viento service enabled at login on next boot")
+            print("Run 'viento start' to start the service right now.")
+            viento_utils.log('inst_enable')
+
+        elif command == 'disable':
+            os.system('systemctl --user disable viento.service')
+            print("Viento service disabled at login on next boot")
+            print("Run 'viento stop' to stop the service right now.")
+            viento_utils.log('inst_disable')
+
+        elif command == 'status':
+            os.system('systemctl --user status viento.service')
+
+        elif command == 'force':
+            """
+            Used to force the daemon to activate a draft regardless of
+            intervals. First this command asks the user which draft to force
+            using the command_list() and draft_select() functions in
+            viento_utils. Then the resulting draft ID is written to a temporary
+            file (f_force) and the pid of the daemon is read from the f_pid
+            file. Finally os.kill() is called to send a signal to the daemon to
+            read the temporary file and activate the draft.
+            """
+            import viento_setup
+            os.system('clear')
+            viento_setup.command_list(show_header=False)
+            with open(viento_utils.f_force, 'w') as f:
+                force_id = viento_setup.draft_select()[0]
+                f.write(force_id)
+
+            try:
+                with open(viento_utils.f_pid, 'r') as f:
+                    pid = int(f.read())
+                os.kill(pid, signal.SIGUSR2)
+
+            except FileNotFoundError:
+                print("Viento is not currently running or the pid.dat " +
+                      "file has been deleted.")
+
+        elif command == 'stats':
+            """
+            Runs the statistics_print() command in viento_utils to display the
+            current statistics on the screen.
+            """
+            viento_utils.statistics_print()
 
     else:
         print("Invalid command.")

@@ -1,6 +1,6 @@
 # Maintainer: tgsachse (Tiger Sachse) <tgsachse@gmail.com>
 pkgname=viento-git
-pkgver=0.4.0
+pkgver=0.5.0
 pkgrel=1
 
 pkgdesc="Daemon and CLI interface for cloud storage management."

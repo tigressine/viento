@@ -9,14 +9,14 @@ Thank you for choosing Viento! This program is designed to send your files throu
 
 [Wiki](https://github.com/tgsachse/viento/wiki)
 
-[Installation/Setup](https://github.com/tgsachse/viento/wiki/Setup).  
+[Installation/Setup](https://github.com/tgsachse/viento/wiki/Setup)  
 
 [Change Log](https://github.com/tgsachse/viento/wiki/Changes)  
 
 [Future Updates](https://github.com/tgsachse/viento/wiki/Future-Updates)  
 
-Author: [Tiger Sachse (tgsachse)](https://github.com/tgsachse)  
+Author: [Tiger Sachse](https://github.com/tgsachse)  
 Initial Release: 7/13/2017  
-Current Release: not-yet-released 
+Current Release: not-yet-released  
 Version: 0.6.0-beta  
 License: [GNU GPLv3](https://github.com/tgsachse/viento/wiki/License) 

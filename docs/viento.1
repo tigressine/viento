@@ -1,0 +1,60 @@
+.TH viento 1 "07 August 2017" "0.6.0"
+.SH NAME
+Viento - Cloud management utility build on top of Rclone.
+.SH SYNOPSIS
+viento [command]
+.SH DESCRIPTION
+Thank you for choosing Viento!
+This program is designed to send your files through the clouds with ease.
+Viento allows you to automatically copy files to and from local and remote directories, so all your files across your cloud services and on your local machines stay up-to-date! Here are just some examples of what Viento can do:
+.PP
+- Copy your music files from your Amazon Drive to Microsoft OneDrive every 2 hours.
+.PP
+- Sync your Google Photos with your desktop every 10 minutes.
+.PP
+- Backup your entire Microsoft OneDrive onto a local backup drive every 24 hours.
+.PP
+- Save your dotfiles to Google Drive every 8 hours.
+.PP
+- Keep Dropbox files up-to-date with Google Drive files.
+.SH OPTIONS
+.PP
+.B setup
+- Runs the Viento Setup Utility to configure Viento.
+.PP
+.B start
+- Start an instance of the Viento daemon.
+.PP
+.B stop
+- Stops the daemon.
+.PP
+.B enable
+- Enables the daemon to run at startup.
+.PP
+.B disable
+- Disables the daemon from running at startup.
+.PP
+.B status
+- Prints the status of the daemon to the screen.
+.PP
+.B version
+- Prints Viento version information.
+.PP
+.B force
+- Starts an interactive prompt to force a specific draft to transfer files.
+.PP
+.B stats
+- Shows some fun statistics!
+.PP
+.B help
+- Lists these commands.
+.SH ADDITIONAL INFORMATION
+Please check out the wiki associated with the GitHub repository for more information, detailed instructions, a change log, tips and tricks, and more.
+Follow this link
+.I https://github.com/tgsachse/viento/wiki
+to view the wiki.
+.SH AUTHOR
+Author: Tiger Sachse
+.I tgsachse@gmail.com
+.SH SEE ALSO
+rclone(1)

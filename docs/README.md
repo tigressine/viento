@@ -1,22 +1,22 @@
 # Viento Cloud Management Utility
 
-Viento (Spanish for 'wind') allows you to move through the clouds with ease! This utility is designed on top of [rclone](https://rclone.org/), and is intended to allow users to automatically sync/copy/move files and directories to and from local and remote destinations. Here are a few examples of what Viento can do.
+Thank you for choosing Viento! This program is designed to send your files through the clouds with ease. Viento allows you to automatically copy files to and from local and remote directories, so all your files across your cloud services and on your local machines stay up-to-date! Here are just *some* examples of what Viento can do:
+* Copy your music files from your Amazon Drive to Microsoft OneDrive every 2 hours.
+* Sync your Google Photos with your desktop every 10 minutes.
+* Backup your entire Microsoft OneDrive onto a local backup drive every 24 hours.
+* Save your dotfiles to Google Drive every 8 hours.
+* Keep Dropbox files up-to-date with Google Drive files.  
 
--Copy your music files from your Amazon Drive to Microsoft OneDrive every 2 hours.  
--Sync your Google Photos with Dropbox every 10 minutes.  
--Backup your Microsoft OneDrive and Dropbox onto a local drive every 24 hours.  
--Copy your dotfiles into a dotfile folder on your Google Drive.  
+[Wiki](https://github.com/tgsachse/viento/wiki)
 
-Viento is under active development and, with each update, aims to support more and more of rclone's extensive features, as well as add some features of its own. Viento is a daemon, so after setup it will continually run in the background to keep your stuff synced. When viento is not syncing it is asleep, which means it has a very small footprint on your machine. I'd like to give a big shoutout to [Nick Craig-Wood](https://github.com/ncw) and all his [contributing authors](https://rclone.org/authors/) for building an amazing piece of software in rclone!
+[Installation/Setup](https://github.com/tgsachse/viento/wiki/Setup).  
 
-[Installation](INSTALL.md)
+[Change Log](https://github.com/tgsachse/viento/wiki/Changes)  
 
-[Upcoming](UPCOMING.md)  
+[Future Updates](https://github.com/tgsachse/viento/wiki/Future-Updates)  
 
-[Change Log](CHANGES.md)
-
-Author: tgsachse (Tiger Sachse)  
+Author: [Tiger Sachse (tgsachse)](https://github.com/tgsachse)  
 Initial Release: 7/13/2017  
-Current Release: 8/012017  
-Version: 0.5.0-beta  
-License: GNU GPLv3 
+Current Release: not-yet-released 
+Version: 0.6.0-beta  
+License: [GNU GPLv3](https://github.com/tgsachse/viento/wiki/License) 

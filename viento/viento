@@ -61,8 +61,8 @@ def main():
             """
             Checks for a drafts.json file and a service file.
             """
-            print("You must have a service file for" +
-                  " Viento to function properly.")
+            print("You must have a service file for " +
+                  "Viento to function properly.")
             print("If you wish to edit the location of the service file, " + 
                   "please edit the f_service variable in the " + 
                   "viento_utils.py source file located in your python3 " + 
@@ -85,13 +85,13 @@ def main():
 
         elif command == 'enable':
             os.system('systemctl --user enable viento.service')
-            print("Viento service enabled at login on next boot")
+            print("Viento service enabled at login on next boot.")
             print("Run 'viento start' to start the service right now.")
             viento_utils.log('inst_enable')
 
         elif command == 'disable':
             os.system('systemctl --user disable viento.service')
-            print("Viento service disabled at login on next boot")
+            print("Viento service disabled at login on next boot.")
             print("Run 'viento stop' to stop the service right now.")
             viento_utils.log('inst_disable')
 
@@ -112,8 +112,12 @@ def main():
             os.system('clear')
             viento_setup.command_list(show_header=False)
             with open(viento_utils.f_force, 'w') as f:
-                force_id = viento_setup.draft_select()[0]
-                f.write(force_id)
+                try:
+                    force_id = viento_setup.draft_select(prompt=("Enter the " + 
+                        "value of the draft you'd like to force."))[0]
+                    f.write(force_id)
+                except TypeError:
+                    quit()
 
             try:
                 with open(viento_utils.f_pid, 'r') as f:

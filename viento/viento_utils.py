@@ -126,7 +126,7 @@ def setup_check():
 
     if not os.path.exists(f_service):
         directories_check()
-        s = ("No service file exists." + 
+        s = ("No service file exists. " + 
              "Would you like to create one at {}?".format(f_service))
         if confirm_input(prompt="(Y/n) > ", ask=s):
             with open(f_service, 'w') as f:

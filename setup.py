@@ -1,13 +1,19 @@
 #! /usr/bin/env python
-
 from setuptools import setup
+
+def load_description():
+    with open('docs/README.md', 'r') as f:
+        long_description = f.read()
+    return long_description
+
 setup(
     name='Viento',
     version='0.6.0',
     author='Tiger Sachse',
     author_email='tgsachse@gmail.com',
-    description='A CLI tool to sync files between local and remote directories',
-    long_description='test',#long_description,
+    description=('A CLI tool to sync files between' +
+                 'local and remote directories'),
+    long_description=load_description(),
     url='https://github.com/tgsachse/viento',
     license='GPLv3',
     classifiers=[
@@ -32,7 +38,8 @@ setup(
     packages=['viento'],
     install_requires=['termcolor'],
     python_requires='>=3',
-    data_files=[('bin',['viento/viento']),
-                ('share/man/man1',['docs/viento.1'])],
-
+    data_files=[
+        ('bin', ['viento/viento']),
+        ('share/man/man1', ['docs/viento.1']),
+        ('share/doc/viento', ['docs/LICENSE.txt', 'docs/README.md'])]
     )

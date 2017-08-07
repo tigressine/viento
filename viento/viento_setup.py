@@ -210,17 +210,19 @@ def command_write():
     except FileNotFoundError:
         pass
 
-def draft_select():
+def draft_select(prompt="Enter the number of the value you'd like to modify."):
     """
     Allows the user to select a draft from a list of drafts.
     """
     while(True):
-        print("Enter the number of the value you'd like to modify.")
+        print(prompt)
         i = input("> ")
         if i.isnumeric() and int(i) <= len(drafts) and int(i) > 0:
             for draft in drafts:
                 if draft[0] == i:
                     return draft
+        elif i == 'q':
+            break
         else:
             print("Invalid input. Please enter a number between 1 and " +
                   str(len(drafts)) + ".")

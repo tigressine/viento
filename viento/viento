@@ -14,7 +14,7 @@ License: GNU GPLv3
 import os
 import sys
 import signal
-import viento_utils
+from viento import viento_utils
 
 ### FUNCTIONS ###
 def main():
@@ -37,7 +37,7 @@ def main():
 
     if command in valid:
         if command == 'setup':
-            import viento_setup #is this heresy? ;)
+            from viento import viento_setup #is this heresy? ;)
             viento_setup.main()
 
         elif command == 'version':
@@ -108,7 +108,7 @@ def main():
             file. Finally os.kill() is called to send a signal to the daemon to
             read the temporary file and activate the draft.
             """
-            import viento_setup
+            from viento import viento_setup
             os.system('clear')
             viento_setup.command_list(show_header=False)
             with open(viento_utils.f_force, 'w') as f:

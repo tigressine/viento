@@ -13,7 +13,7 @@ import os
 import json
 import shutil
 import signal
-import viento_utils
+from viento import viento_utils
 from termcolor import cprint
 
 ### CLASSES ###

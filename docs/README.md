@@ -7,6 +7,8 @@ Thank you for choosing Viento! This program is designed to send your files throu
 * Save your dotfiles to Google Drive every 8 hours.
 * Keep Dropbox files up-to-date with Google Drive files.  
 
+NOTE: Not currently working or under development. I made this program over the summer when I still used Arch Linux, but I have since switched distros and my needs have changed.
+
 [Wiki](https://github.com/tgsachse/viento/wiki)
 
 [Installation/Setup](https://github.com/tgsachse/viento/wiki/Setup)  
@@ -17,6 +19,6 @@ Thank you for choosing Viento! This program is designed to send your files throu
 
 Author: [Tiger Sachse](https://github.com/tgsachse)  
 Initial Release: 7/13/2017  
-Current Release: not-yet-released  
+Current Release: 8/31/2017  
 Version: 0.6.0-beta  
 License: [GNU GPLv3](https://github.com/tgsachse/viento/wiki/License) 

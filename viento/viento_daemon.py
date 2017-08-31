@@ -15,7 +15,7 @@ import re
 import time
 import signal
 import threading
-import viento_utils
+from viento import viento_utils
 
 ### CLASSES ###
 class Draft:

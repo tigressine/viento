@@ -7,8 +7,8 @@ script also provides information about the program.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 8/01/2017
-Version 0.5.0-beta
+Current Release: 8/31/2017
+Version 0.6.0-beta
 License: GNU GPLv3
 """
 import os
@@ -43,10 +43,10 @@ def main():
         elif command == 'version':
             os.system('clear')
             print("Viento Cloud Management Utility\n\n" +
-                  "Version: v0.5.0-beta\n" +
+                  "Version: v0.6.0-beta\n" +
                   "Author: tgsachse (Tiger Sachse)\n" +
                   "Intitial Release: 7/13/2017\n" +
-                  "Current Release: 8/01/2017\n" +
+                  "Current Release: 8/31/2017\n" +
                   "License: GNU GPLv3")
 
         elif command == 'help':

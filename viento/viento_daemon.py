@@ -6,8 +6,8 @@ previous transfers.
 
 Author: tgsachse (Tiger Sachse)
 Initial Release: 7/13/2017
-Current Release: 8/01/2017
-Version: 0.5.0-beta
+Current Release: 8/31/2017
+Version: 0.6.0-beta
 License: GNU GPLv3
 """
 import os
